@@ -5,19 +5,20 @@ var io = require('socket.io')(server);
 var rpio = require('rpio');
 
 var host = process.env.HOST || '0.0.0.0';
-var port = process.env.PORT || 8000;
-
-app.use(express.static('public'));
+var port = process.env.PORT || 8000; //WARNING: app.listen(80) will NOT work here!
 
 server.listen(port, host, function () {
     console.log("Server running on: " + host + " : " + port);
 });
-// WARNING: app.listen(80) will NOT work here!
 
-app.get('/', function (req, res) {
+//Serving file
+app.use(express.static('public'));
+
+/*app.get('/', function (req, res) {
     res.sendFile('index.html');
-});
+});*/
 
+//Connection
 io.on('connection', function (socket) {
     socket.emit('news', {
         hello: 'world'
