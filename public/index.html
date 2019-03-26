@@ -1,0 +1,64 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>CamSlider</title>
+    <meta name="description" content="The HTML5 Herald">
+    <meta name="author" content="SitePoint">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        $(document).ready(function () {
+        var socket = io.connect('http://192.168.2.201:8000');
+
+        socket.on('news', function (data) {
+            console.log(data);
+            socket.emit('my other event', {
+                my: 'data'
+            });
+        });
+
+        var button = document.getElementById('increaser');
+
+        $("input.spin").on("click", function(){
+           socket.emit('spin', {
+               my: 'button clicked'
+           }); 
+        });
+
+        /*var iv;
+        $("input.increaser").on("mousedown touchstart", function () {
+
+            iv = setInterval(function () {
+            socket.emit('make step', {
+                interval: 0.0001});
+            }, 500);
+        }).on("mouseup mouseleave touchend", function () {
+            clearInterval(iv);
+        });*/
+
+        $('input.increaser').on('mousedown touchstart', function(){
+            socket.emit('start looping');
+        }).on('mouseup mouseleave touchend', function(){
+            socket.emit('stop looping');
+        })
+
+        
+    });
+    </script>
+
+</head>
+
+<body>
+    <script src="js/scripts.js"></script>
+    <h1>Halloo Server</h1>
+    <input class="increaser" type="button" value="increase" height="400px">
+    <input class="spin" type="button" value="spin">
+</body>
+
+</html>
