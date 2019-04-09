@@ -41,17 +41,15 @@ $(document).ready(function () {
 
     currentStep = 'mode';
 
-    socket.on('news', function (data) {
+    socket.on('connection_s_to_c', function (data) {
         console.log(data);
-        socket.emit('my other event', {
-            my: 'data'
+        socket.emit('connection_c_to_s', {
+            hello: 'server'
         });
     });
 
     $("input.spin").on("click", function () {
-        socket.emit('spin', {
-            my: 'button clicked'
-        });
+        socket.emit('turn_once');
     });
 
     $('input.increaser').on('mousedown touchstart', function () {
