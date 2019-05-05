@@ -1,4 +1,6 @@
-const route1 = ['mode', 'init', 'autonomous', 'parameters', 'anchors', 'overview'];
+var socket;
+
+let route1 = ['mode', 'init', 'control', 'parameters', 'anchors', 'overview'];
 
 var currentRoute = null;
 var currentStep = null;
@@ -8,8 +10,6 @@ function renderContent(step) {
 }
 
 function setMode(mode) {
-    //setup.setMode(mode);
-
     switch (mode) {
         case 'timelapse':
             currentRoute = route1;
@@ -27,17 +27,25 @@ function setMode(mode) {
 }
 
 function next() {
-    var nextStep = currentRoute.indexOf(currentStep) + 1
+    var nextStep = currentRoute.indexOf(currentStep) + 1;
 
     if(currentRoute[nextStep] === 'undefined'){
         //TODO - SOCKET START WORK
     }else{
+        currentStep = currentRoute[nextStep];
         renderContent(currentRoute[nextStep]);
     }
 }
 
+function initialize(){
+    if (socket != null){
+        socket.emit('initialize');
+    }
+    next();
+}
+
 $(document).ready(function () {
-    var socket = io.connect('http://localhost:8000');
+    socket = io.connect('http://192.168.2.201:8000');
 
     currentStep = 'mode';
 
@@ -56,9 +64,10 @@ $(document).ready(function () {
         socket.emit('start looping');
     }).on('mouseup mouseleave touchend', function () {
         socket.emit('stop looping');
-    })
+    });
 
     $("input.initialize").on("click", function () {
+        console.log("button pressed");
         socket.emit('initialize');
     });
 

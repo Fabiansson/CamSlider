@@ -35,15 +35,28 @@ var looping;
 
         /* On for 1 second */
         rpio.write(pin, rpio.HIGH);
-        rpio.sleep(data.interval);
+        rpio.sleep(0.0001);
 
         /* Off for half a second (500ms) */
         rpio.write(pin, rpio.LOW);
+    }
+
+    function releaseSwitch(pin) {
+        for(i = 0; i < 30; i++){
+            makeStep(pin)
+        }
+    }
+
+    function checkButton(pin){
+        rpio.open(pin, rpio.INPUT);
+        return rpio.read(pin) ? true : false;
     }
 
 module.exports = {
     spin,
     stop,
     turnOnce,
-    makeStep
+    makeStep,
+    releaseSwitch,
+    checkButton
 }
