@@ -58,6 +58,10 @@ $(document).ready(function () {
         socket.emit('stop looping');
     })
 
+    $("input.initialize").on("click", function () {
+        socket.emit('initialize');
+    });
+
     renderContent(currentStep);
 
 

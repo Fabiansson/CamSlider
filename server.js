@@ -4,6 +4,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var rpio = require('rpio');
 var motorDriver = require('./motorDriverr');
+var planer = require('./planer');
 
 var host = process.env.HOST || '0.0.0.0';
 var port = process.env.PORT || 8000; //WARNING: app.listen(80) will NOT work here!
@@ -48,6 +49,11 @@ io.on('connection', function (socket) {
         console.log("Stop looping");
         motor.stop();
     });
+
+    socket.on('initialize', function() {
+        console.log("Initializing");
+        planer.initialize();
+    })
 
     
 });
