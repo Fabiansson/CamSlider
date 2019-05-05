@@ -37,7 +37,7 @@ function next() {
 }
 
 $(document).ready(function () {
-    var socket = io.connect('http://localhost:8000');
+    var socket = io.connect('http://192.168.2.201:8000');
 
     currentStep = 'mode';
 
