@@ -1,10 +1,8 @@
 var rpio = require('rpio');
 
-function motorDriver() {
+var looping;
 
-    var looping;
-
-    this.spin = function(pin) {
+   function spin (pin) {
         rpio.open(pin, rpio.OUTPUT, rpio.LOW);
         console.log("start spin");
         
@@ -17,11 +15,11 @@ function motorDriver() {
         },1);
     }
   
-    this.stop = function() {
+    function stop () {
         clearInterval(looping);
     }
 
-    this.turnOnce = function(pin) {
+    function turnOnce (pin) {
         rpio.open(pin, rpio.OUTPUT, rpio.LOW);
 
         for(var i = 0; i < 200; i++){
@@ -32,7 +30,7 @@ function motorDriver() {
         }
     }
 
-    this.makeStep = function(pin) {
+    function makeStep (pin) {
         rpio.open(pin, rpio.OUTPUT, rpio.LOW);
 
         /* On for 1 second */
@@ -42,6 +40,10 @@ function motorDriver() {
         /* Off for half a second (500ms) */
         rpio.write(pin, rpio.LOW);
     }
-  }
-  
-  module.exports = motorDriver;
+
+module.exports = {
+    spin,
+    stop,
+    turnOnce,
+    makeStep
+}

@@ -3,7 +3,7 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var rpio = require('rpio');
-var motorDriver = require('./motorDriver')
+var motorDriver = require('./motorDriverr');
 
 var host = process.env.HOST || '0.0.0.0';
 var port = process.env.PORT || 8000; //WARNING: app.listen(80) will NOT work here!
@@ -21,7 +21,7 @@ app.use(express.static('public'));
 
 //Connection
 io.on('connection', function (socket) {
-    var motor = motorDriver()
+    var motor = motorDriver;
 
     socket.emit('connection_s_to_c', {
         hello: 'client'
@@ -31,11 +31,12 @@ io.on('connection', function (socket) {
     });
     socket.on('make step', function () {
         console.log("Make Step");
-        motor.makeStep(40)
+        motor.makeStep(40);
     });
     socket.on('turn_once', function () {
         console.log("Turn once");
-        motor.turnOnce(40)
+        //motor.turnOnce(40);
+        motor.turnOnce(40);
     });
 
     socket.on('start looping', function() {
