@@ -3,7 +3,7 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var rpio = require('rpio');
-var motorDriver = require('./motorDriverr');
+var motorDriver = require('./motorDriver');
 var planer = require('./planer');
 
 var host = process.env.HOST || '0.0.0.0';
@@ -30,30 +30,35 @@ io.on('connection', function (socket) {
     socket.on('connection_c_to_s', function (data) {
         console.log(data);
     });
-    socket.on('make step', function () {
+    /*socket.on('make step', function () {
         console.log("Make Step");
         motor.makeStep(40);
     });
-    socket.on('turn_once', function () {
-        console.log("Turn once");
-        //motor.turnOnce(40);
-        motor.turnOnce(40);
+    socket.on('some steps', function (data) {
+        console.log("Some steps in direction: " + data.direction);
+        planer.someSteps(40, data.direction);
+    });*/
+
+    socket.on('reposition', function (data) {
+        console.log("reposition " + data.direction + " continuous: " + data.continuous);
+        planer.reposition(40, data.direction, data.continuous);
     });
 
-    socket.on('start looping', function() {
-        console.log("Start looping");
-        motor.spin(40);
+    socket.on('stop reposition', function () {
+        console.log("stop reposition");
+        planer.stop();
     });
 
-    socket.on('stop looping', function() {
-        console.log("Stop looping");
-        motor.stop();
+    socket.on('add', function () {
+        console.log("add position");
+        planer.add();
     });
 
-    socket.on('initialize', function() {
+    socket.on('initialize', function (data) {
         console.log("Initializing");
+        console.log(data) //TODO - MODUS IN CONFIG FILE SCHREIBEN
         planer.initialize();
     })
 
-    
+
 });
