@@ -32,6 +32,10 @@ function spin (pin) {
         }
     }*/
 
+function sleep(time){
+    rpio.sleep(time);
+}
+
 function makeStep(pin) {
     rpio.open(pin, rpio.OUTPUT, rpio.LOW);
 
@@ -70,6 +74,7 @@ module.exports = {
     /*spin,
     stop,
     turnOnce,*/
+    sleep,
     makeStep,
     releaseSwitch,
     setDirRight,

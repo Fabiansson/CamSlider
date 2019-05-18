@@ -31,11 +31,15 @@ function initialize() {
     renderContent(step);
 }
 
+function add() {
+    socket.emit('add');
+}
+
 $('#app').on('mousedown touchstart', '#right', function () {
     console.log("reposition right");
     socket.emit('reposition', {
         direction: 'right',
-        continuous: True
+        continuous: 'true'
     });
 }).on('mouseup mouseleave touchend', function () {
     socket.emit('stop reposition');
@@ -45,7 +49,7 @@ $('#app').on('mousedown touchstart', '#left', function () {
     console.log("reposition left");
     socket.emit('reposition', {
         direction: 'left',
-        continuous: True
+        continuous: 'true'
     });
 }).on('mouseup mouseleave touchend', function () {
     socket.emit('stop reposition');
@@ -54,24 +58,20 @@ $('#app').on('mousedown touchstart', '#left', function () {
 $('#app').on('mousedown touchstart', '#right_step', function () {
     socket.emit('reposition', {
         direction: 'right',
-        continuous: False
+        continuous: 'false'
     });
 });
 
 $('#app').on('mousedown touchstart', '#left_step', function () {
     socket.emit('reposition', {
         direction: 'left',
-        continuous: False
+        continuous: 'false'
     });
-});
-
-$('#app').on('mousedown touchstart', '#add', function () {
-    socket.emit('add');
 });
 
 
 $(document).ready(function () {
-    socket = io.connect('http://192.168.2.201:8000');
+    socket = io.connect('http://localhost:8000');
 
     currentStep = 'init';
 

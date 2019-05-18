@@ -1,4 +1,3 @@
-var rpio = require('rpio');
 var motor = require('./motorDriver');
 
 var buttonPin = 37;
@@ -15,27 +14,33 @@ var currentPos = 0;
 
 var moving;
 
-function driveToEnd() {
+/*function driveToEnd() {
     rpio.open(dirPin, rpio.OUTPUT, rpio.LOW)
     while (motor.checkButton(buttonPin)) {
         motor.makeStep(motorPin)
     }
     rpio.sleep(0.3);
-}
+}*/
 
 function initialize() {
-    driveToEnd();
+    motor.setDirRight(dirPin);
+
+    while (motor.checkButton(buttonPin)) {
+        motor.makeStep(motorPin)
+    }
+    motor.sleep(0.3);
+
     motor.setDirLeft(dirPin);
     motor.releaseSwitch(motorPin);
 
-    rpio.sleep(1);
+    motor.sleep(1);
 
     while (motor.checkButton(buttonPin)) {
         motor.makeStep(motorPin);
         length++;
     }
     console.log("Total length is: " + length);
-    rpio.sleep(0.3);
+    motor.sleep(0.3);
     motor.setDirRight(dirPin);
     motor.releaseSwitch(motorPin);
     length = length - 50;
@@ -69,7 +74,7 @@ function reposition(pin, direction, continuous) {
         motor.setDirLeft(dirPin);
     }
 
-    if(continuous){
+    if(continuous == 'true'){
         moving = setInterval(function () {
             if (motor.checkButton(buttonPin)) {
                 motor.makeStep(pin);
@@ -84,8 +89,6 @@ function reposition(pin, direction, continuous) {
             }
         }
     }
-
-    
 }
 
 function stop() {
@@ -109,7 +112,6 @@ function updateCurrentPos(direction){
 
 module.exports = {
     initialize,
-    someSteps,
     reposition,
     stop,
     add
