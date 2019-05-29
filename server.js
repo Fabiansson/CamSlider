@@ -39,8 +39,8 @@ io.on('connection', function (socket) {
     });*/
 
     socket.on('reposition', function (data) {
-        console.log("reposition " + data.direction + " continuous: " + data.continuous);
-        planer.reposition(40, data.direction, data.continuous);
+        console.log("reposition on motor: " + data.axis + " in direction: " + data.direction + " continuous: " + data.continuous);
+        planer.reposition(data.axis, data.direction, data.continuous);
     });
 
     socket.on('stop reposition', function () {
@@ -55,8 +55,14 @@ io.on('connection', function (socket) {
 
     socket.on('initialize', function (data) {
         console.log("Initializing");
-        console.log(data) //TODO - MODUS IN CONFIG FILE SCHREIBEN
+        console.log(data)
         planer.initialize();
+    })
+
+    socket.on('go', function (data) {
+        console.log("Starting Plan");
+        console.log(data.interval + " " + data.recordTime + " " + data.movieTime)
+        planer.go(data.interval, data.recordTime, data.movieTime)
     })
 
 
