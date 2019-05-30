@@ -3,6 +3,8 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var rpio = require('rpio');
+var motorDriver = require('./motorDriverr');
+var planer = require('./planer');
 
 var host = process.env.HOST || '0.0.0.0';
 var port = process.env.PORT || 8000; //WARNING: app.listen(80) will NOT work here!
@@ -20,59 +22,38 @@ app.use(express.static('public'));
 
 //Connection
 io.on('connection', function (socket) {
-    socket.emit('news', {
-        hello: 'world'
+    var motor = motorDriver;
+
+    socket.emit('connection_s_to_c', {
+        hello: 'client'
     });
-    socket.on('my other event', function (data) {
+    socket.on('connection_c_to_s', function (data) {
         console.log(data);
     });
-    socket.on('make step', function (data) {
-        console.log(data.interval);
-        var pin = 40;
-
-        rpio.open(pin, rpio.OUTPUT, rpio.LOW);
-
-        /* On for 1 second */
-        rpio.write(pin, rpio.HIGH);
-        rpio.sleep(data.interval);
-
-        /* Off for half a second (500ms) */
-        rpio.write(pin, rpio.LOW);
+    socket.on('make step', function () {
+        console.log("Make Step");
+        motor.makeStep(40);
     });
-    socket.on('spin', function (data) {
-        var pin = 40;
-
-        rpio.open(40, rpio.OUTPUT, rpio.LOW);
-
-        for(var i = 0; i < 200; i++){
-            rpio.write(pin, (0,1,0))
-            rpio.write(pin, rpio.HIGH);
-            rpio.sleep(0.001);
-            rpio.write(pin, rpio.LOW);
-        }
+    socket.on('turn_once', function () {
+        console.log("Turn once");
+        //motor.turnOnce(40);
+        motor.turnOnce(40);
     });
 
-    var looping;
     socket.on('start looping', function() {
         console.log("Start looping");
-        var pin = 40;
-        
-        rpio.open(pin, rpio.OUTPUT, rpio.LOW);
-        
-        looping = setInterval(function(){
-            for(var i = 1; i < 100; i++){
-            rpio.write(pin, rpio.HIGH);
-            rpio.sleep(0.001);
-            rpio.write(pin, rpio.LOW);
-        }
-        },1);
-        
+        motor.spin(40);
     });
 
     socket.on('stop looping', function() {
         console.log("Stop looping");
-        clearInterval(looping);
+        motor.stop();
     });
+
+    socket.on('initialize', function() {
+        console.log("Initializing");
+        planer.initialize();
+    })
 
     
 });

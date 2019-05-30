@@ -9,17 +9,23 @@
     <meta name="description" content="The HTML5 Herald">
     <meta name="author" content="SitePoint">
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
 </head>
 
 <body>
-    <h1>Halloo Server</h1>
-    <input class="increaser" type="button" value="increase" height="400px">
-    <input class="spin" type="button" value="spin">
+    <div id="app"></div>
 
+    <section id="first">
+        <h1>Halloo Server</h1>
+        <input class="increaser" type="button" value="increase" height="400px">
+        <input class="spin" type="button" value="spin">
+
+        <button class="button" onclick="next()">Button</button>
+    </section>
     <script src="client.js"></script>
 </body>
 
