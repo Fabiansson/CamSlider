@@ -1,11 +1,34 @@
 <section class="section">
-        <div class="container">
-            <h1 class="title">
-                CamSlider
-            </h1>
-            <p class="subtitle">
-                Click on <strong>Initialize now!</strong> when device is ready to initialize.
-            </p>
-            <button class="button" onclick="initialize()">Initialize now!</button>
+    <div class="container">
+        <h1 class="title">
+            CamSlider
+        </h1>
+        <p class="subtitle">
+            Click on <strong>Initialize now!</strong> when device is ready to initialize.
+        </p>
+        <div class="control">
+            <label class="radio">
+                <input type="radio" value="timelapse" name="mode" checked>
+                Timelapse
+            </label>
+            <label class="radio">
+                <input type="radio" value="panorama" name="mode">
+                Panorama
+            </label>
+            <label class="radio">
+                <input type="radio" value="movie" name="mode">
+                Movie
+            </label>
+            <br>
+            <label class="radio">
+                <input type="radio" value="camera" name="control" checked>
+                Camera
+            </label>
+            <label class="radio">
+                <input type="radio" value="autonomous" name="control">
+                Autonomous
+            </label>
         </div>
-    </section>
+        <button class="button" onclick="initialize()">Initialize now!</button>
+    </div>
+</section>

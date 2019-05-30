@@ -1,10 +1,10 @@
 var rpio = require('rpio');
 
-function motorDriver() {
+var diection = 0;
 
-    var looping;
+/*var looping;
 
-    this.spin = function(pin) {
+function spin (pin) {
         rpio.open(pin, rpio.OUTPUT, rpio.LOW);
         console.log("start spin");
         
@@ -17,11 +17,11 @@ function motorDriver() {
         },1);
     }
   
-    this.stop = function() {
+    function stop () {
         clearInterval(looping);
     }
 
-    this.turnOnce = function(pin) {
+    function turnOnce (pin) {
         rpio.open(pin, rpio.OUTPUT, rpio.LOW);
 
         for(var i = 0; i < 200; i++){
@@ -30,18 +30,55 @@ function motorDriver() {
             rpio.sleep(0.001);
             rpio.write(pin, rpio.LOW);
         }
+    }*/
+
+function sleep(time){
+    rpio.sleep(time);
+}
+
+function makeStep(pin) {
+    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+
+    rpio.write(pin, rpio.HIGH);
+    rpio.sleep(0.0001);
+
+    rpio.write(pin, rpio.LOW);
+}
+
+function releaseSwitch(pin) {
+    for (i = 0; i < 50; i++) {
+        makeStep(pin)
     }
+}
 
-    this.makeStep = function(pin) {
-        rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+function setDirRight(dirPin) {
+    rpio.open(dirPin, rpio.OUTPUT, rpio.LOW);
+    direction = 0;
+}
 
-        /* On for 1 second */
-        rpio.write(pin, rpio.HIGH);
-        rpio.sleep(data.interval);
+function setDirLeft(dirPin) {
+    rpio.open(dirPin, rpio.OUTPUT, rpio.HIGH);
+    direction = 1;
+}
 
-        /* Off for half a second (500ms) */
-        rpio.write(pin, rpio.LOW);
-    }
-  }
-  
-  module.exports = motorDriver;
+function getDir(){
+    return direction;
+}
+
+function checkButton(pin) {
+    rpio.open(pin, rpio.INPUT);
+    return rpio.read(pin) ? true : false;
+}
+
+module.exports = {
+    /*spin,
+    stop,
+    turnOnce,*/
+    sleep,
+    makeStep,
+    releaseSwitch,
+    setDirRight,
+    setDirLeft,
+    getDir,
+    checkButton
+}

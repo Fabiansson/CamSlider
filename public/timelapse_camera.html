@@ -1,0 +1,61 @@
+<section class="section">
+    <div class="container">
+        <h1 class="title">
+            Settings
+        </h1>
+        <p class="subtitle"></p>
+        <section>
+            <div class="columns is-mobile">
+                <div class="column">
+                    <p id="interval_val">Interval: 20 seconds</p>
+                    <div id="slider_interval"></div><!--<input class="input is-rounded" id="interval" type="number" placeholder="Interval">-->
+                    <p id="rectime_val">Recording Time: 15min</p>
+                    <div id="slider_rectime"></div><!--<input class="input is-rounded" id="recordTime" type="number" placeholder="Recording Time">-->
+                    <p id="movietime_val">Movie Time: 3min</p>
+                    <div id="slider_movietime"></div><!--<input class="input is-rounded" id="movieTime" type="number" placeholder="Movie Time">-->
+                </div>
+                <div class="column is-narrow">
+                    <div class="control">
+                        <i class="fas fa-lock"></i>
+                        <br>
+                        <label class="radio">
+                            <input type="radio" value="interval" name="lock" checked>
+                        </label>
+                        <br>
+                        <label class="radio">
+                            <input type="radio" value="recordTime" name="lock">
+                        </label>
+                        <br>
+                        <label class="radio">
+                            <input type="radio" value="movieTime" name="lock">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+
+            
+
+            <p class="is-size-5">X-Axis</p>
+            <button class="button is-link left" id="x"><<</button>
+            <button class="button is-link left_step" id="x">|<-</button>
+            <button class="button is-link right_step" id="x">->|</button>
+            <button class="button is-link right" id="x">>></button>
+
+            <p class="is-size-5">Y-Axis</p>
+            <button class="button is-link left" id="y"><<</button>
+            <button class="button is-link left_step" id="y">|<-</button>
+            <button class="button is-link right_step" id="y">->|</button>
+            <button class="button is-link right" id="y">>></button>
+
+            <p class="is-size-5">Z-Axis</p>
+            <button class="button is-link left" id="z"><<</button>
+            <button class="button is-link left_step" id="z">|<-</button>
+            <button class="button is-link right_step" id="z">->|</button>
+            <button class="button is-link right" id="z">>></button>
+           
+        </section>
+        <button class="button is-success" id="add" onclick="add()">Add</button>
+        <button class="button" onclick="go()">OK</button>
+    </div>
+</section>

@@ -6,12 +6,18 @@
     <meta charset="utf-8">
 
     <title>CamSlider</title>
-    <meta name="description" content="The HTML5 Herald">
-    <meta name="author" content="SitePoint">
+    <meta name="description" content="This is a Control App for a CamSlider.">
+    <meta name="author" content="Fabian Zbinden">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!--<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="/socket.io/socket.io.js"></script>
 
 </head>
@@ -19,13 +25,6 @@
 <body>
     <div id="app"></div>
 
-    <section id="first">
-        <h1>Halloo Server</h1>
-        <input class="increaser" type="button" value="increase" height="400px">
-        <input class="spin" type="button" value="spin">
-
-        <button class="button" onclick="next()">Button</button>
-    </section>
     <script src="client.js"></script>
 </body>
 
