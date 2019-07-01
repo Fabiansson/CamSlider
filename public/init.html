@@ -20,15 +20,22 @@
                 Movie
             </label>
             <br>
-            <label class="radio">
+            <!--<label class="radio">
                 <input type="radio" value="camera" name="control" checked>
                 Camera
             </label>
             <label class="radio">
                 <input type="radio" value="autonomous" name="control">
                 Autonomous
+            </label>-->
+            <label class="checkbox">
+                <input type="checkbox" id="control">
+                Control Camera by SmileSlider
             </label>
         </div>
         <button class="button" onclick="initialize()">Initialize now!</button>
+        <button class="button" onclick="test()">Test run!</button>
+        <button class="button" onclick="takePicture()">Take picture</button>
+        <button class="button" onclick="analyseReferencePicture()">Analyse Reference Picture</button>
     </div>
 </section>

@@ -1,6 +1,7 @@
 var rpio = require('rpio');
+var temporal = require('temporal');
 
-var diection = 0;
+var direction = 0;
 
 /*var looping;
 
@@ -40,13 +41,32 @@ function makeStep(pin) {
     rpio.open(pin, rpio.OUTPUT, rpio.LOW);
 
     rpio.write(pin, rpio.HIGH);
-    rpio.sleep(0.0001);
+    rpio.sleep(0.001);
 
     rpio.write(pin, rpio.LOW);
 }
 
+function makeSteps(pin, dirPin, steps){
+    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+    temporal.resolution(1);
+
+    temporal.loop(1, function (loop) {
+        rpio.write(pin, loop.called % 2 === 0 ? rpio.HIGH : rpio.LOW)
+
+        if (!checkButton(37)) {
+            loop.stop();
+            changeDir(dirPin);
+            releaseSwitch(pin);
+        }
+
+        if((loop.called / 2) > steps){
+            loop.stop();
+        }
+    });
+}
+
 function releaseSwitch(pin) {
-    for (i = 0; i < 50; i++) {
+    for (i = 0; i < 200; i++) {
         makeStep(pin)
     }
 }
@@ -65,6 +85,12 @@ function getDir(){
     return direction;
 }
 
+///NOT TESTED
+function changeDir(dirPin){
+    rpio.open(dirPin, rpio.INPUT);
+    rpio.read(dirPin) ? setDirRight(dirPin) : setDirLeft (dirPin);
+}
+
 function checkButton(pin) {
     rpio.open(pin, rpio.INPUT);
     return rpio.read(pin) ? true : false;
@@ -76,9 +102,11 @@ module.exports = {
     turnOnce,*/
     sleep,
     makeStep,
+    makeSteps,
     releaseSwitch,
     setDirRight,
     setDirLeft,
     getDir,
+    changeDir,
     checkButton
 }
