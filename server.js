@@ -134,17 +134,14 @@ io.on('connection', function (socket) {
         planer.test();
     })
 
-    /*socket.on('takePicture', function () {
-        PythonShell.run('gphoto_test.py', null, function (err) {
-            if (err) throw err;
-            console.log('finished');
-        });
-    })*/
+    socket.on('takePicture', function () {
+        camera.takePicture();
+    })
+
     socket.on('takeReferencePicture', function () {
         camera.takeReferencePicture();
     })
-
-    socket.on('analyseReferencePicture', function(){
-        camera.analyseImage();
+    socket.on('takePictureWithRamping', function(){
+        camera.takePictureWithRamping(true);
     })
 });

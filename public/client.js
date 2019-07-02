@@ -39,12 +39,12 @@ function test() {
     });
 }
 
-function takePicture(){
-    socket.emit('takePicture');
+function takeReferencePicture(){
+    socket.emit('takeReferencePicture');
 }
 
-function analyseReferencePicture(){
-    socket.emit('analyseReferencePicture');
+function takePictureWithRamping(){
+    socket.emit('takePictureWithRamping');
 }
 
 

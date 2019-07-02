@@ -16,7 +16,6 @@ def main():
 
     # Sum  of all the items in the providen array
     path = lines[0]
-    print("ANALYSING PATH: " + path)
     #for item in lines:
     #    total_sum_inArray += item
     result = subprocess.check_output(['identify','-format','"%[mean]"',path])
