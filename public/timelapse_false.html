@@ -8,11 +8,14 @@
             <div class="columns is-mobile">
                 <div class="column">
                     <p id="interval_val">Interval: 20 seconds</p>
-                    <div id="slider_interval"></div><!--<input class="input is-rounded" id="interval" type="number" placeholder="Interval">-->
+                    <div id="slider_interval"></div>
+                    <!--<input class="input is-rounded" id="interval" type="number" placeholder="Interval">-->
                     <p id="rectime_val">Recording Time: 100 minutes</p>
-                    <div id="slider_rectime"></div><!--<input class="input is-rounded" id="recordTime" type="number" placeholder="Recording Time">-->
+                    <div id="slider_rectime"></div>
+                    <!--<input class="input is-rounded" id="recordTime" type="number" placeholder="Recording Time">-->
                     <p id="movietime_val">Movie Time: 12 seconds</p>
-                    <div id="slider_movietime"></div><!--<input class="input is-rounded" id="movieTime" type="number" placeholder="Movie Time">-->
+                    <div id="slider_movietime"></div>
+                    <!--<input class="input is-rounded" id="movieTime" type="number" placeholder="Movie Time">-->
                 </div>
                 <div class="column is-narrow">
                     <div class="control">
@@ -32,11 +35,22 @@
                     </div>
                 </div>
             </div>
-            
 
-            
 
-            <p class="is-size-5">X-Axis</p>
+            <label class="radio">
+                <input type="radio" value="x" name="axis" checked>
+                X-Axis
+            </label>
+            <label class="radio">
+                <input type="radio" value="y" name="axis" checked>
+                Y-Axis
+            </label>
+            <label class="radio">
+                <input type="radio" value="z" name="axis" checked>
+                Z-Axis
+            </label>
+            <div id="joystick"></div>
+            <!--<p class="is-size-5">X-Axis</p>
             <button class="button is-link left" id="x"><</button>
             <button class="button is-link right" id="x">></button>
 
@@ -46,8 +60,8 @@
 
             <p class="is-size-5">Z-Axis</p>
             <button class="button is-link left" id="z"><</button>
-            <button class="button is-link right" id="z">></button>
-           
+            <button class="button is-link right" id="z">></button>-->
+
         </section>
         <button class="button is-success" id="addStartPoint" onclick="add(false)">Add Starting Point</button>
         <button class="button is-success" id="addEndPoint" onclick="add(true)">Add Ending Point</button>

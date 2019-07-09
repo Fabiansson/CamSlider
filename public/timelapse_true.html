@@ -40,8 +40,107 @@
                 <input type="checkbox" id="ramping">
                 Use automatic brightness ramping
             </label>
+            <div class="columns is-mobile" id="camSettings" style="display:none">
+                <div class="column">
+                    <button class="button is-success" id="takeReferencePicture" onclick="takeReferencePicture()">Take
+                        Reference
+                        Picture</button>
+                    <!--<div class="select">
+                        <select>
+                            <option>1/8000</option>
+                            <option>1/6400</option>
+                            <option>1/5000</option>
+                            <option>1/4000</option>
+                            <option>1/3200</option>
+                            <option>1/2500</option>
+                            <option>1/2000</option>
+                            <option>1/1600</option>
+                            <option>1/1250</option>
+                            <option>1/1000</option>
+                            <option>1/800</option>
+                            <option>1/640</option>
+                            <option>1/500</option>
+                            <option>1/400</option>
+                            <option>1/320</option>
+                            <option>1/250</option>
+                            <option>1/200</option>
+                            <option>1/160</option>
+                            <option>1/125</option>
+                            <option>1/100</option>
+                            <option>1/80</option>
+                            <option>1/60</option>
+                            <option>1/50</option>
+                            <option>1/40</option>
+                            <option>1/30</option>
+                            <option>1/25</option>
+                            <option>1/20</option>
+                            <option>1/15</option>
+                            <option>1/13</option>
+                            <option>1/10</option>
+                            <option>1/8</option>
+                            <option>1/6</option>
+                            <option>1/4</option>
+                            <option>1/3</option>
+                            <option>4/10</option>
+                            <option>5/10</option>
+                            <option>6/10</option>
+                            <option>8/10</option>
+                            <option>1s</option>
+                            <option>1.3s</option>
+                            <option>1.6s</option>
+                            <option>2s</option>
+                            <option>2.5s</option>
+                            <option>3.2s</option>
+                            <option>4s</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="select">
+                        <select>
+                            <option>100</option>
+                            <option>125</option>
+                            <option>160</option>
+                            <option>200</option>
+                            <option>250</option>
+                            <option>320</option>
+                            <option>400</option>
+                            <option>500</option>
+                            <option>640</option>
+                            <option>800</option>
+                            <option>1000</option>
+                            <option>1250</option>
+                            <option>1600</option>
+                            <option>2000</option>
+                            <option>2500</option>
+                            <option>3200</option>
+                            <option>4000</option>
+                            <option>5000</option>
+                            <option>6400</option>
+                            <option>8000</option>
+                            <option>10000</option>
+                            <option>12800</option>
+                            <option>16000</option>
+                        </select>
+                    </div>
+                </div>-->
+            </div>
 
-            <div id="axisButtons">
+            <label class="radio">
+                <input type="radio" value="x" name="axis" checked>
+                X-Axis
+            </label>
+            <label class="radio">
+                <input type="radio" value="y" name="axis" checked>
+                Y-Axis
+            </label>
+            <label class="radio">
+                <input type="radio" value="z" name="axis" checked>
+                Z-Axis
+            </label>
+            <div id="joystick"></div>
+
+            <!--<div id="axisButtons">
                 <p class="is-size-5">X-Axis</p>
                 <button class="button is-link left" id="x">
                     <</button> <button class="button is-link right" id="x">>
@@ -57,15 +156,14 @@
                     <</button> <button class="button is-link right" id="z">>
                 </button>
 
-                <button class="button is-success" id="addStartPoint" onclick="add(false)">Add Starting Point</button>
-                <button class="button is-success" id="addEndPoint" onclick="add(true)">Add Ending Point</button>
-                <button class="button is-success" id="add" onclick="add(false)">Add Extra Point</button>
-                <button class="button" id="go" onclick="go()">OK</button>
-            </div>
+                
+            </div>-->
 
         </section>
-        <button class="button is-success" id="takeReferencePicture" onclick="takeReferencePicture()">Take Reference
-            Picture</button>
+        <button class="button is-success" id="addStartPoint" onclick="add(false)">Add Starting Point</button>
+        <button class="button is-success" id="addEndPoint" onclick="add(true)">Add Ending Point</button>
+        <button class="button is-success" id="add" onclick="add(false)">Add Extra Point</button>
+        <button class="button" id="go" onclick="go()">OK</button>
         <progress id="progress" class="progress is-info" max="100" style="display:none">30%</progress>
 
     </div>

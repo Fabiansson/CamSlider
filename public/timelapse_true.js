@@ -1,19 +1,36 @@
 var pointsAdded = 0;
-var referencePictureTaken = false;
+var pictureTaken = false;
 
 renderButtons();
 
 socket.emit('softResetPlaner');
 
-socket.on('analysingDone', function(data){
-    referencePictureTaken = true;
+socket.on('analysingDone', function (data) {
+    pictureTaken = true;
     renderButtons();
-    $('#progress').css("display","none");
+    $('#progress').css("display", "none");
 })
 
-function takeReferencePicture(){
+socket.on('pictureTaken', function (data) {
+    if (!data.success) {
+        console.log("Error taking picture happened.");
+    }else{
+        console.log("success");
+        pictureTaken = true;
+        renderButtons();
+    }
+    console.log("Ich bin hier");
+    $('#progress').css("display", "none");
+})
+
+function takeReferencePicture() {
     socket.emit('takeReferencePicture');
-    $('#progress').css("display","block");
+    $('#progress').css("display", "block");
+}
+
+function takeTestPicture() {
+    socket.emit('takePicture');
+    $('#progress').css("display", "block");
 }
 
 function add(lastPoint) {
@@ -26,7 +43,7 @@ function go() {
     console.log('update stepppppp');
     socket.emit('updateStep', {
         step: 'running',
-        oldStep: 'timelapse_camera'
+        oldStep: 'timelapse_true'
     });
 
     renderContent('running');
@@ -37,10 +54,40 @@ function go() {
         cameraControl: true,
         ramping: $("#ramping").is(':checked')
     });
-    
 }
 
-$('#app').on('mousedown touchstart', '.right', function (event) {
+var options = {
+    zone: document.getElementById('joystick'),
+    mode: 'static',
+    position: {
+        left: '50%',
+        bottom: '7rem'
+    },
+    threshold: 0.2,
+    color: 'blue',
+    lockX: true
+}
+var manager = nipplejs.create(options);
+
+manager.on('end', function (evt, data) {
+    socket.emit('stop reposition');
+}).on('plain:left plain:right',
+    function (evt, data) {
+        if (evt.type == 'plain:right') {
+            socket.emit('reposition', {
+                axis: $("input[name=axis]:checked").val(),
+                direction: 'right'
+            });
+        } else if (evt.type == 'plain:left') {
+            socket.emit('reposition', {
+                axis: $("input[name=axis]:checked").val(),
+                direction: 'left'
+            });
+        }
+    }
+);
+
+/*$('#app').on('mousedown touchstart', '.right', function (event) {
     console.log("reposition right");
     socket.emit('reposition', {
         axis: event.target.id,
@@ -60,7 +107,7 @@ $('#app').on('mousedown touchstart', '.left', function () {
 }).on('mouseup mouseleave touchend', '.left', function () {
     console.log("stop reposition left");
     socket.emit('stop reposition');
-});
+});*/
 
 
 $("#slider_interval").slider({
@@ -154,39 +201,51 @@ $('input[type=radio][name=lock]').change(function () {
     }
 });
 
-function renderButtons(lastPoint){
-    if(!referencePictureTaken){
-        $('#axisButtons').css("display","none");
-    }else{
-        $('#axisButtons').css("display","block");
+function renderButtons(lastPoint) {
+    if (!pictureTaken) {
+        $('#axisButtons').css("display", "none");
+    } else {
+        $('#axisButtons').css("display", "block");
     }
-    if(pointsAdded == 0){
+    if (pointsAdded == 0) {
         document.getElementById("addStartPoint").style.display = "block";
         document.getElementById("addEndPoint").style.display = "none";
         document.getElementById("add").style.display = "none";
         document.getElementById("go").style.display = "none";
-    }else if(pointsAdded == 1){
+    } else if (pointsAdded == 1) {
         document.getElementById("addStartPoint").style.display = "none";
         document.getElementById("addEndPoint").style.display = "block";
         document.getElementById("add").style.display = "block";
         document.getElementById("go").style.display = "none";
-    }else if(pointsAdded >= 2 && lastPoint){
+    } else if (pointsAdded >= 2 && lastPoint) {
         document.getElementById("addStartPoint").style.display = "none";
         document.getElementById("addEndPoint").style.display = "none";
         document.getElementById("add").style.display = "none";
         document.getElementById("go").style.display = "block";
-    }else{
+    } else {
         document.getElementById("addStartPoint").style.display = "none";
         document.getElementById("addEndPoint").style.display = "block";
         document.getElementById("add").style.display = "block";
         document.getElementById("go").style.display = "none";
-    }   
+    }
 }
 
-function humanReadable(time){
+$('#ramping').change(function () {
+    if (this.checked) {
+        //var returnVal = confirm("Are you sure?");
+        //$(this).prop("checked", returnVal);
+        $('#camSettings').css("display", "block");
+        $('#takeTestPicture').css("display", "none");
+    } else {
+        $('#camSettings').css("display", "none");
+        $('#takeTestPicture').css("display", "block");
+    }
+});
+
+function humanReadable(time) {
     var humanTime = Math.round(time);
     var humanTimeExtension = 'seconds';
-    if(time > 120){
+    if (time > 120) {
         humanTime = Math.round((humanTime / 60) * 100) / 100;
         humanTimeExtension = 'minutes';
     }

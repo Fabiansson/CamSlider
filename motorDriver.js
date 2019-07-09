@@ -33,7 +33,7 @@ function spin (pin) {
         }
     }*/
 
-function sleep(time){
+function sleep(time) {
     rpio.sleep(time);
 }
 
@@ -46,23 +46,30 @@ function makeStep(pin) {
     rpio.write(pin, rpio.LOW);
 }
 
-function makeSteps(pin, dirPin, steps){
-    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
-    temporal.resolution(1);
-
-    temporal.loop(1, function (loop) {
-        rpio.write(pin, loop.called % 2 === 0 ? rpio.HIGH : rpio.LOW)
-
-        if (!checkButton(37)) {
-            loop.stop();
-            changeDir(dirPin);
-            releaseSwitch(pin);
-        }
-
-        if((loop.called / 2) > steps){
-            loop.stop();
-        }
+function makeSteps(pin, dirPin, steps) {
+    return new Promise(function (resolve) {
+        if (steps > 0) {
+            rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+            temporal.resolution(1);
+    
+            temporal.loop(1, function (loop) {
+                rpio.write(pin, loop.called % 2 === 0 ? rpio.HIGH : rpio.LOW)
+    
+                if (!checkButton(37)) {
+                    loop.stop();
+                    changeDir(dirPin);
+                    releaseSwitch(pin);
+                    resolve();
+                }
+    
+                if ((loop.called / 2) > steps) {
+                    loop.stop();
+                    resolve();
+                }
+            });
+        }else resolve();
     });
+    
 }
 
 function releaseSwitch(pin) {
@@ -81,14 +88,14 @@ function setDirLeft(dirPin) {
     direction = 1;
 }
 
-function getDir(){
+function getDir() {
     return direction;
 }
 
 ///NOT TESTED
-function changeDir(dirPin){
+function changeDir(dirPin) {
     rpio.open(dirPin, rpio.INPUT);
-    rpio.read(dirPin) ? setDirRight(dirPin) : setDirLeft (dirPin);
+    rpio.read(dirPin) ? setDirRight(dirPin) : setDirLeft(dirPin);
 }
 
 function checkButton(pin) {
