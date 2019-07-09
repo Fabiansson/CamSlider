@@ -43,7 +43,7 @@ function go() {
     console.log('update stepppppp');
     socket.emit('updateStep', {
         step: 'running',
-        oldStep: 'timelapse_camera'
+        oldStep: 'timelapse_true'
     });
 
     renderContent('running');
@@ -54,10 +54,40 @@ function go() {
         cameraControl: true,
         ramping: $("#ramping").is(':checked')
     });
-
 }
 
-$('#app').on('mousedown touchstart', '.right', function (event) {
+var options = {
+    zone: document.getElementById('joystick'),
+    mode: 'static',
+    position: {
+        left: '50%',
+        bottom: '7rem'
+    },
+    threshold: 0.2,
+    color: 'blue',
+    lockX: true
+}
+var manager = nipplejs.create(options);
+
+manager.on('end', function (evt, data) {
+    socket.emit('stop reposition');
+}).on('plain:left plain:right',
+    function (evt, data) {
+        if (evt.type == 'plain:right') {
+            socket.emit('reposition', {
+                axis: $("input[name=axis]:checked").val(),
+                direction: 'right'
+            });
+        } else if (evt.type == 'plain:left') {
+            socket.emit('reposition', {
+                axis: $("input[name=axis]:checked").val(),
+                direction: 'left'
+            });
+        }
+    }
+);
+
+/*$('#app').on('mousedown touchstart', '.right', function (event) {
     console.log("reposition right");
     socket.emit('reposition', {
         axis: event.target.id,
@@ -77,7 +107,7 @@ $('#app').on('mousedown touchstart', '.left', function () {
 }).on('mouseup mouseleave touchend', '.left', function () {
     console.log("stop reposition left");
     socket.emit('stop reposition');
-});
+});*/
 
 
 $("#slider_interval").slider({

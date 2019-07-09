@@ -2,46 +2,9 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
-var {
-    PythonShell
-} = require('python-shell')
-
-var motorDriver = require('./motorDriver');
+//var motorDriver = require('./motorDriver');
 var planer = require('./planer');
-var camera = require('./camera.js');
-
-/*var https = require('https');
-var http = require('http');*/
-
-//var fs = require('fs');
-//var http = require('http');
-//var https = require('https');
-//var privateKey  = fs.readFileSync('domain.key', 'utf8');
-//var certificate = fs.readFileSync('domain.crt', 'utf8');
-
-//var credentials = {key: privateKey, cert: certificate};
-//var express = require('express');
-//var app = express();
-
-// your express configuration here
-
-//var httpServer = http.createServer(app);
-//var httpsServer = https.createServer(credentials, app);
-//var io = require('socket.io')(server);
-
-
-//httpServer.listen(8080);
-//httpsServer.listen(8443);
-
-
-
-// This line is from the Node.js HTTPS documentation.
-/*var options = {
-  key: fs.readFileSync('domain.key').toString(),
-  cert: fs.readFileSync('domain.crt').toString()
-};
-
-var httpsServer = require('https').createServer(options, app);*/
+var camera = require('./cam.js');
 
 
 var host = process.env.HOST || '0.0.0.0';
@@ -51,31 +14,22 @@ server.listen(port, host, function () {
     console.log("Server running on: " + host + " : " + port);
 });
 
-/*httpsServer.listen(443, host, function(){
-    console.log("Server running on: " + host + " : " + '443');
-})*/
-
-//https.createServer(options, app).listen(443);
-
-//Serving file
+//Serving directory
 app.use(express.static('public'));
 
 var oldStep = null;
 var currentStep = 'init';
 
 
-//Connection
 io.on('connection', function (socket) {
-    var motor = motorDriver;
+    //var motor = motorDriver;
 
     global.socket = socket;
 
     socket.emit('connection_s_to_c', {
         step: currentStep
     });
-    socket.on('connection_c_to_s', function (data) {
-        console.log(data);
-    });
+    
     socket.on('updateStep', function (data) {
         console.log('Current step: ' + data.step + ' Old Step: ' + data.oldStep);
         currentStep = data.step;
@@ -90,57 +44,72 @@ io.on('connection', function (socket) {
         currentStep = oldStep;
         oldStep = temp;
     })
-    /*socket.on('make step', function () {
-        console.log("Make Step");
-        motor.makeStep(40);
-    });
-    socket.on('some steps', function (data) {
-        console.log("Some steps in direction: " + data.direction);
-        planer.someSteps(40, data.direction);
-    });*/
 
+    //for planer
     socket.on('reposition', function (data) {
-        console.log("reposition on motor: " + data.axis + " in direction: " + data.direction + " continuous: " + data.continuous);
+        console.log("reposition on motor: " + data.axis + " in direction: " + data.direction);
         planer.reposition(data.axis, data.direction);
     });
 
+    //for planer
     socket.on('stop reposition', function () {
         console.log("stop reposition");
         planer.stop();
     });
 
+    //for planer
     socket.on('add', function () {
         console.log("add position");
         planer.add();
     });
 
+    //for planer
     socket.on('softResetPlaner', function () {
         planer.softReset();
     })
 
+    //for planer
     socket.on('initialize', function (data) {
-        console.log("Initializing");
-        planer.initialize(data.mode, data.control).then(() => console.log("INIT DONE!"));
+        planer.initialize(data.mode, data.control);
     })
 
+    //for planer
     socket.on('timelapse', function (data) {
         console.log("Starting Plan");
-        console.log(data.interval + " " + data.recordTime + " " + data.movieTime)
-        planer.timelapse(data.interval, data.recordTime, data.movieTime)
+        console.log(data.interval + " " + data.recordTime + " " + data.movieTime + " " + data.cameraControl + " " + data.ramping);
+        planer.timelapse(data.interval, data.recordTime, data.movieTime, data.cameraControl, data.ramping);
     })
 
+    //for planer
+    socket.on('panorama', function(data){
+        console.log("Starting Pano Plan");
+        console.log(data.config.toString() + " " + data.interval + " " + data.cameraControl + " " + data.hdr)
+        planer.panorama(data.config, data.interval, data.cameraControl, data.hdr);
+    })
+
+    //for planer
+    socket.on('waterscale', function(){
+        console.log("Waterscaled");
+        planer.waterscale();
+    })
+
+    //for planer
     socket.on('test', function () {
         console.log("TEST RUN!");
         planer.test();
     })
 
+    //for camera
     socket.on('takePicture', function () {
         camera.takePicture();
     })
 
+    //for camera
     socket.on('takeReferencePicture', function () {
+        console.log("Take Reference Picture");
         camera.takeReferencePicture();
     })
+    //for camera
     socket.on('takePictureWithRamping', function(){
         camera.takePictureWithRamping(true);
     })

@@ -385,11 +385,11 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
         })
 
         if (cameraControl && ramping & i % 5 == 0) {
-            var camReady = camera.takePictureWithRamping(true);
+            camera.takePictureWithRamping(true);
         } else if (cameraControl && ramping) {
-            var camReady = camera.takePictureWithRamping(false);
+            camera.takePictureWithRamping(false);
         } else if (cameraControl) {
-            var camReady = camera.takePicture();
+            camera.takePicture();
         }
 
         socket.on('abort', function () {
@@ -398,7 +398,6 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
         })
 
         await sleep(interval * 1000);
-        if(cameraControl) await camReady
     }
 }
 

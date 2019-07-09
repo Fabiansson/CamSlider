@@ -40,13 +40,12 @@
                 <input type="checkbox" id="ramping">
                 Use automatic brightness ramping
             </label>
-            <button class="button is-success" id="takeTestPicture" onclick="takePicture()">Take Test Picture</button>
             <div class="columns is-mobile" id="camSettings" style="display:none">
                 <div class="column">
                     <button class="button is-success" id="takeReferencePicture" onclick="takeReferencePicture()">Take
                         Reference
                         Picture</button>
-                    <div class="select">
+                    <!--<div class="select">
                         <select>
                             <option>1/8000</option>
                             <option>1/6400</option>
@@ -124,10 +123,24 @@
                             <option>16000</option>
                         </select>
                     </div>
-                </div>
+                </div>-->
             </div>
 
-            <div id="axisButtons">
+            <label class="radio">
+                <input type="radio" value="x" name="axis" checked>
+                X-Axis
+            </label>
+            <label class="radio">
+                <input type="radio" value="y" name="axis" checked>
+                Y-Axis
+            </label>
+            <label class="radio">
+                <input type="radio" value="z" name="axis" checked>
+                Z-Axis
+            </label>
+            <div id="joystick"></div>
+
+            <!--<div id="axisButtons">
                 <p class="is-size-5">X-Axis</p>
                 <button class="button is-link left" id="x">
                     <</button> <button class="button is-link right" id="x">>
@@ -143,14 +156,14 @@
                     <</button> <button class="button is-link right" id="z">>
                 </button>
 
-                <button class="button is-success" id="addStartPoint" onclick="add(false)">Add Starting Point</button>
-                <button class="button is-success" id="addEndPoint" onclick="add(true)">Add Ending Point</button>
-                <button class="button is-success" id="add" onclick="add(false)">Add Extra Point</button>
-                <button class="button" id="go" onclick="go()">OK</button>
-            </div>
+                
+            </div>-->
 
         </section>
-
+        <button class="button is-success" id="addStartPoint" onclick="add(false)">Add Starting Point</button>
+        <button class="button is-success" id="addEndPoint" onclick="add(true)">Add Ending Point</button>
+        <button class="button is-success" id="add" onclick="add(false)">Add Extra Point</button>
+        <button class="button" id="go" onclick="go()">OK</button>
         <progress id="progress" class="progress is-info" max="100" style="display:none">30%</progress>
 
     </div>

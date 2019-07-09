@@ -2,13 +2,21 @@ var {
     PythonShell
 } = require('python-shell')
 
-var folder_name = "2019-07-01PiShots";
+var folder_name = function(){
+    today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //As January is 0.
+    var yyyy = today.getFullYear();
+    
+    if(dd<10) dd='0'+dd;
+    if(mm<10) mm='0'+mm;
+    return (dd+'-'+mm+'-'+yyyy);
+    };
 var imagesPath = "/root/CamSlider/imagesTaken/" + folder_name;
 var referencePicturesPath = "/root/CamSlider/imagesTaken/referencePicture/" + folder_name;
 var lastImage = "";
 
 var reference = "";
-var oldBrightness = "";
 var currentBrightness = "";
 var sensibility = 1250;
 
@@ -85,7 +93,6 @@ var CONFIGS = [
     ["40/10", '12800'],
     ["40/10", '16000']
 ];
-
 
 function takePicture() {
     PythonShell.run('takePicture.py', null, function (err) {

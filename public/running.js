@@ -1,8 +1,8 @@
 socket.on('progress', function (data) {
-    $("#progress").attr("value", data.done);
-    $("#progress").attr("max", data.total);
-    $("#done").text(data.done);
-    $("#total").text(data.total);
+    $("#progress").attr("value", data.value);
+    $("#progress").attr("max", data.max);
+    $("#done").text(data.value);
+    $("#total").text(data.max);
 })
 
 function abort() {
