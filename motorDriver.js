@@ -55,7 +55,8 @@ function makeSteps(pin, dirPin, steps) {
             temporal.loop(1, function (loop) {
                 rpio.write(pin, loop.called % 2 === 0 ? rpio.HIGH : rpio.LOW)
     
-                if (!checkButton(37)) {
+                if (pin == 5 && !checkButton(40)) {
+                    console.log("dadadadadad");
                     loop.stop();
                     changeDir(dirPin);
                     releaseSwitch(pin);
@@ -69,7 +70,6 @@ function makeSteps(pin, dirPin, steps) {
             });
         }else resolve();
     });
-    
 }
 
 function releaseSwitch(pin) {

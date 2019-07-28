@@ -1,6 +1,7 @@
 const {
     spawn
 } = require('child_process');
+//var usb = require('usb')
 var fs = require('fs');
 var gphoto2 = require('gphoto2');
 var im = require('imagemagick');
@@ -18,6 +19,19 @@ var currentBrightness = "";
 var sensibility = 1250;
 
 var currentStep = 21;
+
+var socket;
+
+function initSocket(socket){
+    socket = socket;
+
+    socket.on('requestCamera', function () {
+        socket.emit('hasCamera', {
+            hasCamera: camera != null
+        })
+    })
+
+}
 
 var CONFIGS = [
     ["1/8000", '100'],
@@ -90,109 +104,194 @@ var CONFIGS = [
     ["40/10", '16000']
 ];
 
-resetCamera().then(success => {
-    console.log('Cam connected: ' + success);
+
+/*resetCamera()
+    .then(success => {
+        console.log('Camera conected: ' + success);
+    }).catch(er => {
+        console.log(er.message);
+    });
+
+usb.on('attach', function (device) {
+    GPhoto.list(function (list) {
+        if (list.length === 0) return;
+        camera = list[0];
+        console.log('Found', camera.model);
+    });
 });
 
+usb.on('detach', function (device) {
+    camera = null;
+    console.log('Camera disconected');
+});*/
+
 function resetCamera() {
-    return new Promise(function (resolve) {
-        /*getUsbID().then(function (id) {
-            reset('/dev/bus/usb/001/' + id, function (err, data) {*/
+    return new Promise(async (resolve, reject) => {
+        try {
+            /*var id = await getUsbID();
+
+            reset('/dev/bus/usb/001/' + id, function (err, data) {
                 GPhoto.list(function (list) {
                     if (list.length === 0) {
-                        resolve(false);
+                        reject(new Error("No camera conected"));
                         return;
                     }
                     camera = list[0];
                     console.log('Found', camera.model);
                     resolve(true);
                 });
-            /*})
-        })*/
-    });
+            })*/
 
+        } catch (er) {
+            console.log(er.message);
+            reject(new Error("No camera conected"));
+        }
+    });
 }
 
 
 function takePicture() {
     // Take picture without downloading immediately
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         camera.takePicture({
             download: false
         }, function (er, path) {
-            resolve();
+            if (er) {
+                reject(er);
+            } else resolve();
         });
     });
 }
 
 function takeReferencePicture() {
-    return new Promise(function (resolve) {
-        takePictureAndDownload(false).then(function (path) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            var path = await takePictureAndDownload(false)
             lastImage = path;
-            analyseImage(lastImage).then(function (result) {
-                currentBrightness = result;
-                reference = result;
-                console.log("Reference IS: " + reference);
-                resetCamera().then(function (success) {
-                    if (success) {
-                        getIso().then(function (iso) {
-                            getShutterSpeed().then(function (shutterSpeed) {
-                                for (var i = 0; i < CONFIGS.length; i++) {
-                                    if (CONFIGS[i][0] == shutterSpeed && CONFIGS[i][1] == iso) {
-                                        currentStep = i;
-                                        console.log("Current step is: " + currentStep);
-                                        resolve();
-                                        break;
-                                    } else {
-                                        currentStep = 21; //magic number
-                                    }
-                                }
-                                resolve();
-                            });
-                        });
-                    }
-                });
-            })
-        })
+            var brightness = await analyseImage(lastImage);
+            currentBrightness = brightness;
+            reference = brightness;
+            console.log("Reference IS: " + reference);
+            await resetCamera();
+            var iso = await getIso();
+            var shutterSpeed = await getShutterSpeed();
+            currentStep = searchConfig(shutterSpeed, iso);
+            console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
+            global.socket.emit('analysingDone', {
+                success: true
+            });
+            resolve();
+        } catch (er) {
+            global.socket.emit('analysingDone', {
+                success: false
+            });
+            reject(er);
+            console.log(er);
+        }
     });
-
 }
 
-async function takePictureWithRamping(analyse) {
-    return new Promise(async (resolve) => {
-        await setShutterSpeed(CONFIGS[currentStep][0]);
-        await setIso(CONFIGS[currentStep][1]);
+/*function takeReferencePicture() {
+    takePictureAndDownload(false, function (path) {
+        lastImage = path;
+        analyseImage(lastImage, function (result) {
+            currentBrightness = result;
+            reference = result;
+            console.log("Reference IS: " + reference);
+            resetCamera(function (success) {
+                if (success) {
+                    getIso(function (iso) {
+                        getShutterSpeed(function (shutterSpeed) {
+                            for (var i = 0; i < CONFIGS.length; i++) {
+                                if (CONFIGS[i][0] == shutterSpeed && CONFIGS[i][1] == iso) {
+                                    currentStep = i;
+                                    console.log("Current step is: " + currentStep);
+                                    break;
+                                } else {
+                                    currentStep = 21; //magic number
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        })
+    })
+}*/
 
-        takePictureAndDownload(false).then(function (path) {
+async function takePictureWithRamping(analyse) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            console.log("await setshutterspeed");
+            await setShutterSpeed(CONFIGS[currentStep][0]);
+            console.log("await setiso");
+            await setIso(CONFIGS[currentStep][1]);
+
+            console.log("await takepictureanddownload");
+            var path = await takePictureAndDownload(false);
             lastImage = path;
             resolve();
             if (analyse) {
-                analyseImage(lastImage).then(function (result) {
-                    currentBrightness = result;
-                    if (currentBrightness - reference > sensibility) {
-                        currentStep--;
-                        console.log("Brightness Step got decreased.");
-                    } else if (currentBrightness - reference < (sensibility * -1)) {
-                        currentStep++;
-                        console.log("Brightness Step got increased.");
-                    }
-                })
+                var brightness = await analyseImage(lastImage);
+                currentBrightness = brightness;
+                if (currentBrightness - reference > sensibility) {
+                    currentStep--;
+                    console.log("Brightness Step got decreased.");
+                } else if (currentBrightness - reference < (sensibility * -1)) {
+                    currentStep++;
+                    console.log("Brightness Step got increased.");
+                }
             }
-        })
+        } catch (er) {
+            console.log(er);
+            reject(new Error("Taking picture with ramping failed."));
+        }
     });
 }
 
-function takePictureWithHdr() {
+async function takePictureWithHdr() {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await takePicture();
+            await resetCamera();
+            var shutterSpeed = await getShutterSpeed();
+            var iso = await getIso();
+            var step = searchConfig(shutterSpeed, iso);
+            if (step != null && (CONFIGS.length > step + 3) && (step - 3 > 0)) {
+                //await setShutterSpeed(CONFIGS[step + 3][0]);
+                //await setIso(CONFIGS[step + 3][1]);
+                await Promise.all([setShutterSpeed(CONFIGS[step + 3][0]), setIso(CONFIGS[step + 3][1])]);
+                await takePicture();
+                await setShutterSpeed(CONFIGS[step - 3][0]);
+                await setIso(CONFIGS[step - 3][1]);
+                await takePicture();
+                await setShutterSpeed(CONFIGS[step][0]);
+                await setIso(CONFIGS[step][1]);
+                resolve();
+            } else {
+                var hdrError = new Error('No coresponding config was found or initial config inapropriate for further hdr image taking.');
+                reject(hdrError);
+            }
+        } catch (er) {
+            console.log(er);
+            reject(new Error('Taking picture with HDR failed'));
+        }
+    });
+
+
+
+
 
 }
 
 function takePictureAndDownload(keep) {
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         shotTime = getTime();
         camera.takePicture({
             download: true,
             keep: keep
         }, function (er, data) {
+            if (er) reject(er);
             if (!fs.existsSync(imagesPath)) {
                 fs.mkdirSync(imagesPath);
             }
@@ -218,12 +317,16 @@ function getShutterSpeed() {
     /*camera.getConfig('iso', function (er, settings) {
         console.log(settings.main.capturesettings.shutterspeed2.value);
     });*/
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
 
         ls.stdout.on('data', (data) => {
             var shutterspeed = data.toString().split('\n')[2].split(' ')[1];
             resolve(shutterspeed);
+        });
+
+        ls.stderr.on('data', (data) => {
+            reject(new Error("Could not get shutterSpeed"))
         });
     });
 }
@@ -232,44 +335,68 @@ function getIso() {
     /*camera.getConfig('iso', function (er, settings) {
         console.log(settings.main.imgsettings.iso.value);
     });*/
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         const ls = spawn('gphoto2', ['--get-config=iso']);
 
         ls.stdout.on('data', (data) => {
             var iso = data.toString().split('\n')[2].split(' ')[1];
             resolve(iso);
         });
+        ls.stderr.on('data', (data) => {
+            console.log(data);
+            reject(new Error("Could not get iso"))
+        });
     });
 }
 
 function setIso(iso) {
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         camera.setConfigValue('iso', iso, function (er) {
-            resolve();
+            if (er) {
+                reject(er);
+            } else {
+                resolve();
+            }
         });
     });
 }
 
 function setShutterSpeed(shutterSpeed) {
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         camera.setConfigValue('shutterspeed', shutterSpeed, function (er) {
-            resolve();
+            if (er) {
+                reject(er);
+            } else {
+                resolve();
+            }
         });
     });
 }
 
 function analyseImage(path) {
-    return new Promise(function (resolve) {
+    return new Promise(function (resolve, reject) {
         im.identify(['-format', '%[mean]', path], function (err, output) {
-            if (err) throw err;
+            if (err) {
+                reject(err);
+                throw err;
+
+            }
             console.log('Brightness: ' + output);
-            socket.emit('analysingDone', {
-                value: output
-            });
             resolve(output)
         });
     });
+}
 
+function searchConfig(shutterSpeed, iso) {
+    var step = null;
+    for (var i = 0; i < CONFIGS.length; i++) {
+        if (CONFIGS[i][0] == shutterSpeed && CONFIGS[i][1] == iso) {
+            step = i
+            console.log("Current step is: " + step);
+            break;
+        }
+    }
+    return step;
 }
 
 function getTime() {
@@ -292,20 +419,31 @@ function getFolderName() {
 };
 
 function getUsbID() {
-    return new Promise(function (resolve) {
-        for (var i = 5; i < 15; i++) {
-            const lsusb = spawn('lsusb', ['-s 1:' + i]);
+    return new Promise(function (resolve, reject) {
+        var devices = usb.getDeviceList();
 
-            lsusb.stdout.on('data', (data) => {
-                var id = data.toString().split(' ')[3].replace(/\D/g, '');;
-                resolve(id);
-            });
+        for (var i = 0; i < 15; i++) {
+            if (devices[i] != undefined) {
+                var id = fill(devices[i]['deviceAddress'].toString().replace(/\D/g, ''), 3);
+
+                if (id > 4) {
+                    resolve(id);
+                    return;
+                }
+            }
         }
+        reject(new Error("Could not get USB ID"));
     });
 }
 
 function hasCamera() {
     return (camera != null);
+}
+
+function fill(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 
 
@@ -330,6 +468,6 @@ module.exports = {
     takeReferencePicture,
     takePictureWithRamping,
     takePictureWithHdr,
-    getShutterSpeed,
-    hasCamera
+    hasCamera,
+    initSocket
 }

@@ -3,24 +3,133 @@ var temporal = require('temporal');
 var rpio = require('rpio');
 var camera = require('./cam.js');
 
-var buttonPin = 37;
+/*var buttonPin = 37;
 
 var motorPin_x = 40;
 var dirPin_x = 38;
 var motorPin_y = 36;
 var dirPin_y = 32;
 var motorPin_z = 29;
-var dirPin_z = 33;
+var dirPin_z = 33;*/
+
+var buttonPin = 40;
+
+var motorPin_x = 5;
+var dirPin_x = 3;
+var motorPin_y = 11;
+var dirPin_y = 7;
+var motorPin_z = 15;
+var dirPin_z = 13;
 
 var length = 0;
 
 var positions = [];
 
-var currentPos_x = 0;
+var currentPos_x = 1;
 var currentPos_y = 0;
 var currentPos_z = 0;
 
 var shouldMove;
+var pause = false;
+var busy = false;
+var abort = false;
+
+var initialized = false;
+
+
+var socket;
+
+function initSocket(socket){
+    socket = socket;
+
+    socket.on('getPosition', function(){
+        socket.emit('reportingPosition', {
+            x: currentPos_x,
+            y: currentPos_y,
+            z: currentPos_z
+        })
+    })
+
+    socket.on('points', function(data){
+        positions = data.points
+    })
+
+
+    socket.on('waterscale', function(){
+        console.log('waterscale');
+        waterscale();
+    })
+    
+    socket.on('pause', function () {
+        pause = true;
+    })
+    
+    socket.on('resume', function () {
+        if(!busy){
+            pause = false;
+            panorama(currentPanoConfig, panoInterval, panoCamControl, panoHdr, panoIndex);
+        }else{
+            socket.emit('isBusy', {
+                fromSingle: true
+            });
+        }
+    })
+    
+    socket.on('retakePanoPicture', function (data) {
+        if (!busy) {
+            console.log(data.totalInRow);
+            console.log(data.angle);
+            var config = [[data.totalInRow, data.angle]];
+            panorama(config, 5, panoCamControl, panoHdr, data.index, true);
+        }else{
+            socket.emit('isBusy', {
+                fromSingle: false
+            });
+        }
+    })
+    
+    socket.on('abort', function () {
+        abort = true;
+        driveToStart();
+        softReset();
+    })
+    
+    socket.on('panoramaInfo', function(){
+        socket.emit('panoramaInfoResponse', {
+            config: currentPanoConfig
+        })
+    })
+    
+    socket.on('timelapseInfo', function(){
+        socket.emit('timelapseInfoResponse', {
+            waypoints: timelapseWaypoints
+        })
+    })
+    
+    socket.on('panorama', function (data) {
+        console.log("Starting Pano Plan");
+        currentPanoConfig = data.config.sort(function(a, b) {
+            return b[1] - a[1];
+        });
+        panoInterval = data.interval
+        panoCamControl = data.cameraControl
+        panoHdr = data.hdr
+        console.log(data.config.toString() + " " + data.interval + " " + data.cameraControl + " " + data.hdr)
+        panorama(data.config, data.interval, data.cameraControl, data.hdr, 0);
+    });
+
+    socket.on('init', async function(){
+        if(!initialized) await initTimelapse();
+        socket.emit('initDone');
+    })
+}
+
+
+
+
+var timelapseWaypoints;
+
+
 
 var panoConfig = {
     "full": {
@@ -101,8 +210,12 @@ var currentPanoConfig = [
     [7, -32],
     [1, -90]
 ];
+var panoInterval;
+var panoCamControl;
+var panoHdr;
+var panoIndex = 0;
 
-function initialize(mode, control) {
+async function initialize(mode, control) {
     /*if (mode == 'timelapse') {
         initTimelapse();
     } else socket.emit('initializeDone', {
@@ -111,33 +224,51 @@ function initialize(mode, control) {
     if (mode == 'timelapse') {
         if (control) {
             if (camera.hasCamera()) {
-                initTimelapse();
+                await initTimelapse();
+                socket.emit('initializeDone', {
+                    success: true,
+                    mode: 'timelapse',
+                    control: 'true'
+                })
                 return;
             } else {
                 socket.emit('initializeDone', {
-                    success: false
+                    success: false,
+                    mode: 'timelapse',
+                    control: 'false'
                 })
                 return;
             }
         }
-        initTimelapse();
+        await initTimelapse();
+        socket.emit('initializeDone', {
+            success: true,
+            mode: 'timelapse',
+            control: 'false'
+        })
 
     } else if (mode == 'panorama') {
         if (control) {
             if (camera.hasCamera()) {
                 socket.emit('initializeDone', {
-                    success: true
+                    success: true,
+                    mode: 'panorama',
+                    control: 'true'
                 })
                 return
             } else {
                 socket.emit('initializeDone', {
-                    success: false
+                    success: false,
+                    mode: 'panorama',
+                    control: 'true'
                 });
                 return;
             }
         }
         socket.emit('initializeDone', {
-            success: true
+            success: true,
+            mode: 'panorama',
+            control: 'false'
         });
 
     } else if (mode == 'movie') {
@@ -147,30 +278,35 @@ function initialize(mode, control) {
 }
 
 async function initTimelapse() {
-    console.log("INIT TIMELAPSE");
-    await driveToEnd();
-    rpio.open(motorPin_x, rpio.OUTPUT, rpio.LOW);
+    return new Promise(async (resolve) => {
+        console.log("INIT TIMELAPSE");
+        //await driveToStart();
 
-    motor.sleep(1);
-    temporal.resolution(0.1);
+        await sleep(4000);
+        resolve();
+        /*await driveToEnd();
+        rpio.open(motorPin_x, rpio.OUTPUT, rpio.LOW);
 
-    temporal.loop(0.1, function (loop) {
-        rpio.write(motorPin_x, loop.called % 2 === 0 ? rpio.HIGH : rpio.LOW)
+        motor.sleep(1);
+        temporal.resolution(0.1);
 
-        if (!motor.checkButton(buttonPin)) {
-            loop.stop();
-            length = loop.called / 2;
-            console.log("Total length is: " + length);
-            motor.setDirRight(dirPin_x);
-            motor.releaseSwitch(motorPin_x);
-            currentPos_x = 0;
-            currentPos_y = 0;
-            currentPos_z = 0;
-            socket.emit('initializeDone', {
-                success: true
-            })
-        }
+        temporal.loop(0.1, function (loop) {
+            rpio.write(motorPin_x, loop.called % 2 === 0 ? rpio.HIGH : rpio.LOW)
+
+            if (!motor.checkButton(buttonPin)) {
+                loop.stop();
+                length = loop.called / 2;
+                console.log("Total length is: " + length);
+                motor.setDirRight(dirPin_x);
+                motor.releaseSwitch(motorPin_x);
+                currentPos_x = 0;
+                currentPos_y = 0;
+                currentPos_z = 0;
+                resolve();
+            }
+        });*/
     });
+
 }
 
 function waterscale() {
@@ -373,65 +509,125 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     await driveToStart();
 
     var amountPauses = (movieTime * 25);
-    var waypoints = generateWaypopints(positions, amountPauses);
+    timelapseWaypoints = generateWaypopints(positions, amountPauses);
+    console.log(timelapseWaypoints);
 
-    for (var i = 0; i < waypoints.length; i++) {
-        console.log("Drive to " + waypoints[i]);
-        await driveToPosition(waypoints[i]);
+    /*socket.emit('timelapseInfo', {
+        waypoints: waypoints,
+        amountPauses: amountPauses
+    })*/
 
-        socket.emit('progress', {
-            value: i,
-            max: waypoints.length
-        })
+    for (var i = 0; i < timelapseWaypoints.length; i++) {
+        console.log("Drive to " + timelapseWaypoints[i]);
+        var timeToMove = sleep(2000);
+        var move = driveToPosition(timelapseWaypoints[i]);
 
-        if (cameraControl && ramping & i % 5 == 0) {
+        await timeToMove;
+        await move;
+
+        if (cameraControl && ramping && (i % 5 == 0)) {
+            console.log("takePictureWithRamping true");
             var camReady = camera.takePictureWithRamping(true);
         } else if (cameraControl && ramping) {
+            console.log("takePictureWithRamping false");
             var camReady = camera.takePictureWithRamping(false);
         } else if (cameraControl) {
             var camReady = camera.takePicture();
         }
 
-        socket.on('abort', function () {
-            i = waypoints.length;
-            driveToPosition([0, 0]);
-        })
+        if (abort) {
+            console.log("Timelapse aborted!");
+            return;
+        }
 
-        await sleep(interval * 1000);
-        if(cameraControl) await camReady
+        await sleep((interval - 2) * 1000);
+        if (cameraControl) await camReady
+
+        socket.emit('progress', {
+            value: i + 1,
+            max: timelapseWaypoints.length
+        })
     }
 }
 
-async function panorama(config, interval, cameraControl, hdr) {
+async function panorama(config, interval, cameraControl, hdr, index, single) {
     console.log('PLAN STARTING!');
-    currentPanoConfig = config;
 
-    var waypoints = generatePanoPoints(currentPanoConfig);
+    var waypoints = generatePanoPoints(config);
+    var limit = waypoints.length;
 
-    for (var i = 0; i < waypoints.length; i++) {
+    if(single) limit = index + 1
+
+    for (var i = index; i < limit; i++) {
+        busy = true;
         console.log("Drive to " + waypoints[i]);
-        await driveToPosition(waypoints[i])
-        socket.emit('progress', {
+        //await driveToPosition(waypoints[i])
+        await sleep(1000);
+        global.socket.emit('progress', {
             value: i,
             max: waypoints.length
         })
 
         if (cameraControl && hdr) {
-            camera.takePictureWithHdr();
+            try {
+                await camera.takePictureWithHdr();
+            } catch (error) {
+                console.log(error.message);
+            }
         } else if (cameraControl && !hdr) {
             await sleep(500);
             await camera.takePicture();
             await sleep(500);
         }
 
-        socket.on('abort', function () {
-            i = waypoints.length;
-            driveToStart();
-        })
+        if (abort) {
+            console.log("Pano aborted");
+            return;
+        }
 
         await sleep(interval * 1000);
+
+        if (pause && !single) {
+            panoIndex = i + 1;
+            busy = false
+            return;
+        }
     }
+    busy = false;
 }
+
+/*async function doPanorama(waypoints, interval, cameraControl, hdr) {
+    busy = true;
+    console.log("Drive to " + waypoints[0]);
+    await driveToPosition(waypoints.shift())
+    socket.emit('progress', {
+        value: i + 1,
+        max: waypoints.length
+    })
+
+    if (cameraControl && hdr) {
+        try {
+            await camera.takePictureWithHdr();
+        } catch (error) {
+            console.log(error.message);
+        }
+    } else if (cameraControl && !hdr) {
+        await sleep(500);
+        await camera.takePicture();
+        await sleep(500);
+    }
+
+    if (abort) {
+        console.log("Pano aborted");
+        return [];
+    }
+
+    await sleep(interval * 1000);
+
+    if (!pause && waypoints.length > 0) return doPanorama(waypoints, interval, cameraControl, hdr);
+    busy = false;
+    return waypoints;
+}*/
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -480,15 +676,15 @@ function generateWaypopints(points, n) {
 }
 
 function generatePanoPoints(panoConfig) {
-    var yStepsPerDegree = 62;
-    var zStepsPerDegree = 133;
+    var yStepsPerRotation = 36000;
+    var zStepsPerRotation = 36000;
 
     var waypoints = [];
 
     for (var i = 0; i < panoConfig.length; i++) {
         var picPerRow = panoConfig[i][0];
         for (var j = 0; j < panoConfig[i][0]; j++) {
-            waypoints.push([((360 / picPerRow) * j) * yStepsPerDegree, panoConfig[i][1] * zStepsPerDegree]);
+            waypoints.push([(yStepsPerRotation / picPerRow) * j, zStepsPerRotation / (360 / panoConfig[i][1])]);
         }
 
     }
@@ -498,20 +694,36 @@ function generatePanoPoints(panoConfig) {
 
 function softReset() {
     positions = [];
+    currentPos_x = 1;
+    currentPos_y = 0;
+    currentPos_z = 0;
+
+    pause = false;
+    busy = false;
+    abort = false;
+    panoIndex = 0;
+
+    initialized = false;
 }
 
-function test() {
+async function test() {
+    /*try {
+        await camera.takeReferencePicture();
+    } catch (er) {
+        console.log(er);
+    }*/
+
     currentPos_x = 0;
     currentPos_y = 0;
     currentPos_z = 0;
-    length = 12000;
+    length = 50000;
 
     positions = [
-        [100, 10, 24],
-        [8000, 809, -1546],
-        [16000, 96, -3074]
+        [4521, 0, 0],
+        [50000, 5580, 6000],
+        [100000, -5580, -6000]
     ];
-    timelapse(10, 300, 1.2);
+    timelapse(3, 1.2, false, false);
 }
 
 module.exports = {
@@ -523,5 +735,6 @@ module.exports = {
     panorama,
     softReset,
     test,
-    waterscale
+    waterscale,
+    initSocket
 }

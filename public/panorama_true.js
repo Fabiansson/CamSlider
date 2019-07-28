@@ -8,7 +8,7 @@ var options = {
         bottom: '7rem'
     },
     threshold: 0.2,
-    color: 'blue',
+    color: '#e60e3d',
     lockX: true
 }
 var manager = nipplejs.create(options);
@@ -17,6 +17,7 @@ manager.on('end', function (evt, data) {
     socket.emit('stop reposition');
 }).on('plain:left plain:right',
     function (evt, data) {
+        socket.emit('stop reposition');
         if (evt.type == 'plain:right') {
             socket.emit('reposition', {
                 axis: $("input[name=axis]:checked").val(),

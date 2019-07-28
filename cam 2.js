@@ -273,7 +273,7 @@ function getUsbID(callback) {
         const lsusb = spawn('lsusb', ['-s 1:' + i]);
 
         lsusb.stdout.on('data', (data) => {
-            var id = data.toString().split(' ')[3].replace(/\D/g, '');;
+            var id = data.toString().split(' ')[3].replace(/\D/g, '');
             callback(id);
         });
     }
