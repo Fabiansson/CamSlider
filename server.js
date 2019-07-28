@@ -4,7 +4,7 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var exec = require('child_process').exec;
 
-//var motorDriver = require('./motorDriver');
+var motorDriver = require('./arduinoDriver');
 var planer = require('./planer');
 var camera = require('./cam.js');
 
@@ -33,6 +33,7 @@ io.on('connection', function (socket) {
     global.socket = socket;
     planer.initSocket(socket);
     camera.initSocket(socket);
+    motorDriver.initSocket(socket);
 
     socket.emit('connection_s_to_c', {
         step: navHistory[navHistory.length - 1]
@@ -60,27 +61,25 @@ io.on('connection', function (socket) {
     })
     
     //for planer
-    socket.on('reposition', function (data) {
+    /*socket.on('reposition', function (data) {
         console.log("reposition on motor: " + data.axis + " in direction: " + data.direction);
         planer.reposition(data.axis, data.direction);
-    });
+    });*/
 
     //for planer
-    socket.on('stop reposition', function () {
+    /*socket.on('stop reposition', function () {
         console.log("stop reposition");
         planer.stop();
-    });
+    });*/
 
     //for planer
-    socket.on('add', function () {
+    /*socket.on('add', function () {
         console.log("add position");
         planer.add();
-    });
+    });*/
 
     //for planer
-    socket.on('softResetPlaner', function () {
-        planer.softReset();
-    })
+    
 
     //for planer
     /*socket.on('initialize', function (data) {
@@ -88,11 +87,11 @@ io.on('connection', function (socket) {
     })*/
 
     //for planer
-    socket.on('timelapse', function (data) {
+    /*socket.on('timelapse', function (data) {
         console.log("Starting Plan");
         console.log(data.interval + " " + data.recordTime + " " + data.movieTime + " " + data.cameraControl + " " + data.ramping);
         planer.timelapse(data.interval, data.movieTime, data.cameraControl, data.ramping);
-    })
+    })*/
 
     //for planer
     /*socket.on('panorama', function(data){
@@ -108,10 +107,10 @@ io.on('connection', function (socket) {
     })*/
 
     //for planer
-    socket.on('test', function () {
+    /*socket.on('test', function () {
         console.log("TEST RUN!");
         planer.test();
-    })
+    })*/
 
     //for camera
     socket.on('requestCamera', function () {

@@ -1,7 +1,8 @@
-var motor = require('./motorDriver');
+//var motor = require('./motorDriver');
 var temporal = require('temporal');
 var rpio = require('rpio');
 var camera = require('./cam.js');
+var motor = require('./arduinoDriver');
 
 /*var buttonPin = 37;
 
@@ -34,31 +35,34 @@ var pause = false;
 var busy = false;
 var abort = false;
 
-var initialized = false;
-
 
 var socket;
 
 function initSocket(socket){
     socket = socket;
 
-    socket.on('getPosition', function(){
+    /*socket.on('getPosition', function(){
         socket.emit('reportingPosition', {
             x: currentPos_x,
             y: currentPos_y,
             z: currentPos_z
         })
-    })
+    })*/
 
     socket.on('points', function(data){
         positions = data.points
     })
 
 
-    socket.on('waterscale', function(){
+    /*socket.on('waterscale', function(){
         console.log('waterscale');
         waterscale();
-    })
+    })*/
+
+    /*socket.on('add', function () {
+        console.log("add position");
+        add();
+    });*/
     
     socket.on('pause', function () {
         pause = true;
@@ -105,6 +109,12 @@ function initSocket(socket){
             waypoints: timelapseWaypoints
         })
     })
+
+    socket.on('timelapse', function (data) {
+        console.log("Starting Plan");
+        console.log(data.interval + " " + data.recordTime + " " + data.movieTime + " " + data.cameraControl + " " + data.ramping);
+        timelapse(data.interval, data.movieTime, data.cameraControl, data.ramping);
+    })
     
     socket.on('panorama', function (data) {
         console.log("Starting Pano Plan");
@@ -118,10 +128,19 @@ function initSocket(socket){
         panorama(data.config, data.interval, data.cameraControl, data.hdr, 0);
     });
 
-    socket.on('init', async function(){
+    socket.on('softResetPlaner', function () {
+        softReset();
+    })
+
+    socket.on('test', function () {
+        console.log("TEST RUN!");
+        test();
+    })
+
+    /*socket.on('init', async function(){
         if(!initialized) await initTimelapse();
         socket.emit('initDone');
-    })
+    })*/
 }
 
 
@@ -215,12 +234,7 @@ var panoCamControl;
 var panoHdr;
 var panoIndex = 0;
 
-async function initialize(mode, control) {
-    /*if (mode == 'timelapse') {
-        initTimelapse();
-    } else socket.emit('initializeDone', {
-        success: true
-    });*/
+/*async function initialize(mode, control) {
     if (mode == 'timelapse') {
         if (control) {
             if (camera.hasCamera()) {
@@ -284,29 +298,7 @@ async function initTimelapse() {
 
         await sleep(4000);
         resolve();
-        /*await driveToEnd();
-        rpio.open(motorPin_x, rpio.OUTPUT, rpio.LOW);
-
-        motor.sleep(1);
-        temporal.resolution(0.1);
-
-        temporal.loop(0.1, function (loop) {
-            rpio.write(motorPin_x, loop.called % 2 === 0 ? rpio.HIGH : rpio.LOW)
-
-            if (!motor.checkButton(buttonPin)) {
-                loop.stop();
-                length = loop.called / 2;
-                console.log("Total length is: " + length);
-                motor.setDirRight(dirPin_x);
-                motor.releaseSwitch(motorPin_x);
-                currentPos_x = 0;
-                currentPos_y = 0;
-                currentPos_z = 0;
-                resolve();
-            }
-        });*/
     });
-
 }
 
 function waterscale() {
@@ -372,16 +364,16 @@ function reposition(axis, direction) {
 
 function stop() {
     shouldMove = false;
-}
+}*/
 
-function add() {
+/*function add() {
     var position = [currentPos_x, currentPos_y, currentPos_z]
     positions.push(position);
     console.log("added position: " + position);
     console.log(positions);
-}
+}*/
 
-function updateCurrentPos(axis, direction, amount) {
+/*function updateCurrentPos(axis, direction, amount) {
     if (direction == 'right') {
         if (axis == 'x')
             currentPos_x = currentPos_x + amount;
@@ -397,9 +389,9 @@ function updateCurrentPos(axis, direction, amount) {
         else
             currentPos_z = currentPos_z - amount;
     }
-}
+}*/
 
-function driveToStart() {
+/*function driveToStart() {
     if (currentPos_x != 0) {
         rpio.open(motorPin_x, rpio.OUTPUT, rpio.LOW);
         motor.setDirLeft(dirPin_x);
@@ -422,9 +414,9 @@ function driveToStart() {
             });
         });
     }
-}
+}*/
 
-function driveToEnd() {
+/*function driveToEnd() {
     rpio.open(motorPin_x, rpio.OUTPUT, rpio.LOW);
     motor.setDirRight(dirPin_x);
 
@@ -444,9 +436,9 @@ function driveToEnd() {
             }
         });
     });
-}
+}*/
 
-async function driveToPosition(position) {
+/*async function driveToPosition(position) {
     return new Promise(async (resolve) => {
         if (position.length == 3) {
             var x_position = position[0];
@@ -502,7 +494,7 @@ async function driveToPosition(position) {
         resolve();
     });
 
-}
+}*/
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
