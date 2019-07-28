@@ -117,7 +117,7 @@ function reposition(axis, dir) {
 
     board.accelStepperStep(deviceNumber, direction * 100000);
 
-    board.digitalRead(buttonPin, function (value) {
+    board.digitalRead(buttonPin, async function (value) {
         board.reportDigitalPin(buttonPin, 0)
         board.accelStepperStop(deviceNum);
         changeDir();
@@ -145,7 +145,7 @@ function driveToStart() {
     return new Promise(async (resolve) => {
         setDirLeft();
         board.accelStepperStep(0, direction * 100000)
-        board.digitalRead(buttonPin, function (value) {
+        board.digitalRead(buttonPin, async function (value) {
             board.reportDigitalPin(buttonPin, 0)
             board.accelStepperStop(deviceNum);
             changeDir();
@@ -239,9 +239,6 @@ module.exports = {
     stop,
     turnOnce,*/
     initSocket,
-    sleep,
-    makeStep,
-    makeSteps,
     releaseSwitch,
     setDirRight,
     setDirLeft,

@@ -719,14 +719,11 @@ async function test() {
 }
 
 module.exports = {
-    initialize,
-    reposition,
-    stop,
-    add,
+    
+
     timelapse,
     panorama,
     softReset,
     test,
-    waterscale,
     initSocket
 }
