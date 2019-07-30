@@ -1,6 +1,4 @@
 //var motor = require('./motorDriver');
-var temporal = require('temporal');
-var rpio = require('rpio');
 var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
 
@@ -498,7 +496,7 @@ function stop() {
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
-    await driveToStart();
+    await motor.driveToStart();
 
     var amountPauses = (movieTime * 25);
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
@@ -512,7 +510,7 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     for (var i = 0; i < timelapseWaypoints.length; i++) {
         console.log("Drive to " + timelapseWaypoints[i]);
         var timeToMove = sleep(2000);
-        var move = driveToPosition(timelapseWaypoints[i]);
+        var move = motor.driveToPosition(timelapseWaypoints[i]);
 
         await timeToMove;
         await move;

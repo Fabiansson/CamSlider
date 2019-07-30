@@ -1,3 +1,4 @@
+var SegfaultHandler = require('segfault-handler');
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
@@ -18,6 +19,8 @@ server.listen(port, host, function () {
 
 //Serving directory
 app.use(express.static('public'));
+
+SegfaultHandler.registerHandler("crash.log");
 
 var oldStep = null;
 var currentStep = 'init';

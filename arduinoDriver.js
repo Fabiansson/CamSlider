@@ -1,48 +1,13 @@
 const Firmata = require("firmata");
 const board = new Firmata('/dev/ttyUSB0');
 
-var socket;
-
-function initSocket(socket){
-    socket = socket
-
-    socket.on('getPosition', function(){
-        socket.emit('reportingPosition',{
-            x: getPos(0),
-            y: getPos(1),
-            z: getPos(2)
-        })
-    })
-
-    socket.on('waterscale', function(){
-        console.log('waterscale');
-        board.accelStepperZero(0);
-        board.accelStepperZero(1);
-        board.accelStepperZero(2);
-    })
-
-    socket.on('init', async function(){
-        if(!initialized) await initTimelapse();
-        initialized = true;
-        socket.emit('initDone');
-    })
-
-    socket.on('reposition', function (data) {
-        console.log("reposition on motor: " + data.axis + " in direction: " + data.direction);
-        reposition(data.axis, data.direction);
-    });
-
-    socket.on('stop reposition', function () {
-        console.log("stop reposition");
-        stop();
-    });
-}
-
-board.on("ready", () => {
-    console.log("Arduino ready");
-});
-
 var direction = 1;
+
+var shouldMove;
+
+var initialized = false;
+
+var atEnd = 1;
 
 var xMotor = {
     deviceNum: 0, // <number> Device number for the stepper (range 0-9)
@@ -68,10 +33,77 @@ var zMotor = {
     directionPin: 7, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
 };
 
+var socket;
 
-var shouldMove;
+function initSocket(socket) {
+    socket = socket
 
-var initialized = false;
+    socket.on('getPosition', async function() {
+        
+        var x, y, z;
+        x = await getPos(0);
+        //y = getPos(1);
+        //z = getPos(2);
+
+        console.log("getPos" + x + " " + y + " " + z);
+        await x;
+        await y;
+        await z;
+
+        socket.emit('reportingPosition', {
+            x: x,
+            y: 100,
+            z: 200
+        })
+    })
+
+    socket.on('waterscale', function () {
+        console.log('waterscale');
+        board.accelStepperZero(0);
+        board.accelStepperZero(1);
+        board.accelStepperZero(2);
+    })
+
+    socket.on('init', async function () {
+        if (!initialized) await initTimelapse();
+        initialized = true;
+        socket.emit('initDone');
+    })
+
+    socket.on('reposition', function (data) {
+        console.log("reposition on motor: " + data.axis + " in direction: " + data.direction);
+        reposition(data.axis, data.direction);
+    });
+
+    socket.on('stop reposition', function () {
+        console.log("stop reposition");
+        stop();
+    });
+
+
+}
+
+board.on("ready", () => {
+    console.log("Arduino ready");
+    board.accelStepperConfig(xMotor);
+    board.accelStepperConfig(yMotor);
+    board.accelStepperConfig(zMotor);
+    board.accelStepperSpeed(0, 1000);
+    board.accelStepperSpeed(1, 1000);
+    board.accelStepperSpeed(2, 1000);
+    board.pinMode(10, board.MODES.INPUT);
+
+    board.digitalRead(10, function (value) {
+        board.reportDigitalPin(10, 0)
+        atEnd = 0;
+        console.log("atEnd: " + atEnd);
+    });
+});
+
+
+
+
+
 
 /*function makeStep(pin) {
     rpio.open(pin, rpio.OUTPUT, rpio.LOW);
@@ -93,6 +125,7 @@ async function initTimelapse() {
 }
 
 function reposition(axis, dir) {
+    if(!shouldMove){
     shouldMove = true;
     var deviceNumber;
 
@@ -114,23 +147,39 @@ function reposition(axis, dir) {
     } else {
         setDirLeft();
     }
+    console.log(dir + " " + deviceNumber + " " + shouldMove + " " + direction)
 
-    board.accelStepperStep(deviceNumber, direction * 100000);
+    if (atEnd != 0) board.accelStepperStep(deviceNumber, direction * 100000);
 
-    board.digitalRead(buttonPin, async function (value) {
-        board.reportDigitalPin(buttonPin, 0)
-        board.accelStepperStop(deviceNum);
-        changeDir();
-        await releaseSwitch();
-        
-    });
-
-    temporal.loop(1, function (loop) {
-        if (!shouldMove) {
-            loop.stop();
-            board.accelStepperStop(deviceNum);
+    /*board.digitalRead(10, async function (value) {
+        if(value == board.LOW){
+            board.reportDigitalPin(10, 0)
+            changeDir();
+            await releaseSwitch();
         }
-    });
+    });*/
+
+    var endInterval = setInterval(async () => {
+        if (atEnd == 0) {
+            clearInterval(endInterval);
+            clearInterval(stopInterval)
+            changeDir();
+            await releaseSwitch();
+            board.reportDigitalPin(10, 1);
+        }
+    }, 1);
+
+    var stopInterval = setInterval(function () {
+        if (!shouldMove) {
+            clearInterval(stopInterval);
+            clearInterval(endInterval);
+            board.accelStepperStop(deviceNumber);
+            getPos(deviceNumber, function (value) {
+                console.log(value);
+            });
+        }
+    }, 100);
+    }
 }
 
 function stop() {
@@ -138,20 +187,38 @@ function stop() {
 }
 
 function getPos(device) {
-    return board.accelStepperReportPosition(device);
+    return new Promise(function(resolve){
+        board.accelStepperReportPosition(device, value => {
+            resolve(value);
+        });
+    })
+    
 }
 
 function driveToStart() {
     return new Promise(async (resolve) => {
         setDirLeft();
-        board.accelStepperStep(0, direction * 100000)
-        board.digitalRead(buttonPin, async function (value) {
-            board.reportDigitalPin(buttonPin, 0)
-            board.accelStepperStop(deviceNum);
-            changeDir();
-            await releaseSwitch();
-            board.accelStepperZero(xMotor);
-            resolve();
+        board.accelStepperStep(0, direction * 100000);
+
+        /*var end = setInterval(async () => {
+            if (atEnd == 0) {
+                clearInterval(end);
+                changeDir();
+                await releaseSwitch();
+                board.accelStepperZero(0);
+                resolve();
+            }
+        }, 100);*/
+
+        board.digitalRead(10, async function (value) {
+            console.log(value);
+            if(value == board.LOW){
+                //board.reportDigitalPin(10, 0)
+                changeDir();
+                await releaseSwitch();
+                board.accelStepperZero(0);
+                resolve();
+            }
         });
     });
 }
@@ -162,7 +229,7 @@ function driveToEnd() {
         board.accelStepperStep(0, direction * 100000)
         while (true) {
             if (!checkButton()) {
-                board.accelStepperStop(deviceNum);
+                board.accelStepperStop(0);
                 break;
             }
         }
@@ -174,21 +241,21 @@ function driveToEnd() {
 
 async function driveToPosition(position) {
     return new Promise(async (resolve) => {
-        if (position.length == 3) {
+        var positionLength = position.length;
+        if (positionLength == 3) {
             var x_position = position[0];
             var y_position = position[1];
             var z_position = position[2];
         } else {
-            var x_position = getPos(xMotor);
             var y_position = position[0];
             var z_position = position[1];
         }
 
-        var xMove = stepTo(xMotor, x_position)
-        var yMove = stepTo(yMotor, y_position)
-        var zMove = stepTo(zMotor, z_position)
+        if (positionLength == 3) var xMove = stepTo(0, x_position)
+        var yMove = stepTo(1, y_position)
+        var zMove = stepTo(2, z_position)
 
-        await xMove;
+        if (positionLength == 3) await xMove;
         await yMove;
         await zMove;
         resolve();
@@ -205,18 +272,19 @@ function stepTo(motor, position) {
 
 function releaseSwitch() {
     return new Promise(function (resolve) {
-        board.accelStepperStep(xMotor, direction * 200, function () {
+        board.accelStepperStep(0, direction * 200, function () {
+            console.log("finish");
             resolve();
         });
     });
 
 }
 
-function setDirRight(dirPin) {
+function setDirRight() {
     direction = 1;
 }
 
-function setDirLeft(dirPin) {
+function setDirLeft() {
     direction = -1;
 }
 
@@ -245,5 +313,8 @@ module.exports = {
     getDir,
     getPos,
     changeDir,
-    checkButton
+    checkButton,
+    driveToStart,
+    driveToEnd,
+    driveToPosition
 }
