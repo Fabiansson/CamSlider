@@ -4,10 +4,30 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var exec = require('child_process').exec;
+const process = require('process');
+var errorhandler = require('errorhandler');
+
+process.on('beforeExit', (code) => {
+    console.log('Process beforeExit event with code: ', code);
+  });
+  
+  process.on('exit', (code) => {
+    console.log('Process exit event with code: ', code);
+  });
+
+  process.on('uncaughtException', (err, origin) => {
+    console.log('Error ' + err);
+    console.log('Origin: ' + origin);
+  });
+
+  process.on('unhandledRejection', (reason, p) => {
+    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    // application specific logging, throwing an error, or other logic here
+});
 
 var motorDriver = require('./arduinoDriver');
 var planer = require('./planer');
-var camera = require('./cam.js');
+//var camera = require('./cam.js');
 
 
 var host = process.env.HOST || '0.0.0.0';
@@ -17,6 +37,7 @@ server.listen(port, host, function () {
     console.log("Server running on: " + host + " : " + port);
 });
 
+app.use(errorhandler())
 //Serving directory
 app.use(express.static('public'));
 
@@ -35,12 +56,18 @@ io.on('connection', function (socket) {
     
     global.socket = socket;
     planer.initSocket(socket);
-    camera.initSocket(socket);
+    //camera.initSocket(socket);
     motorDriver.initSocket(socket);
 
     socket.emit('connection_s_to_c', {
         step: navHistory[navHistory.length - 1]
     });
+
+    socket.on('requestRoute', function(){
+        socket.emit('route', {
+            route: 'timelapse'
+        })
+    })
 
     socket.on('updateStep', function (data) {
         console.log('Current step: ' + data.step + ' Old Step: ' + data.oldStep);
@@ -115,8 +142,9 @@ io.on('connection', function (socket) {
         planer.test();
     })*/
 
+    //from here on was
     //for camera
-    socket.on('requestCamera', function () {
+    /*socket.on('requestCamera', function () {
         socket.emit('hasCamera', {
             hasCamera: camera.hasCamera()
         })
@@ -150,5 +178,5 @@ io.on('connection', function (socket) {
             console.log(er);
         }
         
-    })
+    })*/
 });

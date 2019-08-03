@@ -1,5 +1,6 @@
+const devMode = false;
 //var motor = require('./motorDriver');
-var camera = require('./cam.js');
+//var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
 
 /*var buttonPin = 37;
@@ -90,9 +91,9 @@ function initSocket(socket){
         }
     })
     
-    socket.on('abort', function () {
+    socket.on('abort', async function () {
         abort = true;
-        driveToStart();
+        await motor.driveToPosition([0, 0, 0]);
         softReset();
     })
     
@@ -496,11 +497,11 @@ function stop() {
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
-    await motor.driveToStart();
-
     var amountPauses = (movieTime * 25);
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
     console.log(timelapseWaypoints);
+
+    if(!devMode) await motor.driveToPosition([0,0,0]);
 
     /*socket.emit('timelapseInfo', {
         waypoints: waypoints,
@@ -510,10 +511,10 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     for (var i = 0; i < timelapseWaypoints.length; i++) {
         console.log("Drive to " + timelapseWaypoints[i]);
         var timeToMove = sleep(2000);
-        var move = motor.driveToPosition(timelapseWaypoints[i]);
+        if(!devMode) var move = motor.driveToPosition(timelapseWaypoints[i]);
 
         await timeToMove;
-        await move;
+        if(!devMode) await move;
 
         if (cameraControl && ramping && (i % 5 == 0)) {
             console.log("takePictureWithRamping true");
@@ -533,7 +534,7 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
         await sleep((interval - 2) * 1000);
         if (cameraControl) await camReady
 
-        socket.emit('progress', {
+        global.socket.emit('progress', {
             value: i + 1,
             max: timelapseWaypoints.length
         })
@@ -551,7 +552,7 @@ async function panorama(config, interval, cameraControl, hdr, index, single) {
     for (var i = index; i < limit; i++) {
         busy = true;
         console.log("Drive to " + waypoints[i]);
-        //await driveToPosition(waypoints[i])
+        if(!devMode) await motor.driveToPosition(waypoints[i])
         await sleep(1000);
         global.socket.emit('progress', {
             value: i,
@@ -666,8 +667,8 @@ function generateWaypopints(points, n) {
 }
 
 function generatePanoPoints(panoConfig) {
-    var yStepsPerRotation = 36000;
-    var zStepsPerRotation = 36000;
+    var yStepsPerRotation = 37080;
+    var zStepsPerRotation = 37080;
 
     var waypoints = [];
 

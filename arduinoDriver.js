@@ -1,5 +1,33 @@
+const devMode = false;
 const Firmata = require("firmata");
-const board = new Firmata('/dev/ttyUSB0');
+var board;
+if(!devMode) {
+    board = new Firmata('/dev/ttyUSB0');
+
+    var xMotor = {
+        deviceNum: 0, // <number> Device number for the stepper (range 0-9)
+        type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
+        //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
+        stepPin: 2, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
+        directionPin: 3, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
+    };
+    
+    var yMotor = {
+        deviceNum: 1, // <number> Device number for the stepper (range 0-9)
+        type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
+        //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
+        stepPin: 4, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
+        directionPin: 5, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
+    };
+    
+    var zMotor = {
+        deviceNum: 2, // <number> Device number for the stepper (range 0-9)
+        type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
+        //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
+        stepPin: 6, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
+        directionPin: 7, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
+    };
+}
 
 var direction = 1;
 
@@ -9,29 +37,7 @@ var initialized = false;
 
 var atEnd = 1;
 
-var xMotor = {
-    deviceNum: 0, // <number> Device number for the stepper (range 0-9)
-    type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
-    //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
-    stepPin: 2, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
-    directionPin: 3, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
-};
 
-var yMotor = {
-    deviceNum: 1, // <number> Device number for the stepper (range 0-9)
-    type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
-    //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
-    stepPin: 4, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
-    directionPin: 5, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
-};
-
-var zMotor = {
-    deviceNum: 2, // <number> Device number for the stepper (range 0-9)
-    type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
-    //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
-    stepPin: 6, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
-    directionPin: 7, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
-};
 
 var socket;
 
@@ -42,8 +48,8 @@ function initSocket(socket) {
         
         var x, y, z;
         x = await getPos(0);
-        //y = getPos(1);
-        //z = getPos(2);
+        y = await getPos(1);
+        z = await getPos(2);
 
         console.log("getPos" + x + " " + y + " " + z);
         await x;
@@ -52,16 +58,16 @@ function initSocket(socket) {
 
         socket.emit('reportingPosition', {
             x: x,
-            y: 100,
-            z: 200
+            y: y,
+            z: z
         })
     })
 
     socket.on('waterscale', function () {
         console.log('waterscale');
-        board.accelStepperZero(0);
-        board.accelStepperZero(1);
-        board.accelStepperZero(2);
+        if(!devMode) board.accelStepperZero(0);
+        if(!devMode) board.accelStepperZero(1);
+        if(!devMode) board.accelStepperZero(2);
     })
 
     socket.on('init', async function () {
@@ -83,21 +89,26 @@ function initSocket(socket) {
 
 }
 
-board.on("ready", () => {
+if(!devMode) board.on("ready", () => {
     console.log("Arduino ready");
     board.accelStepperConfig(xMotor);
     board.accelStepperConfig(yMotor);
     board.accelStepperConfig(zMotor);
-    board.accelStepperSpeed(0, 1000);
+    board.accelStepperSpeed(0, 2000);
     board.accelStepperSpeed(1, 1000);
     board.accelStepperSpeed(2, 1000);
     board.pinMode(10, board.MODES.INPUT);
 
-    board.digitalRead(10, function (value) {
+    /*board.digitalRead(10, async function (value) {
+        if(value == board.LOW){
         board.reportDigitalPin(10, 0)
         atEnd = 0;
-        console.log("atEnd: " + atEnd);
-    });
+        changeDir();
+        await releaseSwitch();
+        board.reportDigitalPin(10, 1);
+        atEnd = 1;
+        }
+    });*/
 });
 
 
@@ -126,6 +137,13 @@ async function initTimelapse() {
 
 function reposition(axis, dir) {
     if(!shouldMove){
+        board.accelStepperAcceleration(0, 1000);
+        board.accelStepperSpeed(0, 6000);
+        board.accelStepperAcceleration(1, 1000);
+        board.accelStepperSpeed(1, 6000);
+        board.accelStepperAcceleration(2, 1000);
+        board.accelStepperSpeed(2, 6000);
+
     shouldMove = true;
     var deviceNumber;
 
@@ -149,7 +167,7 @@ function reposition(axis, dir) {
     }
     console.log(dir + " " + deviceNumber + " " + shouldMove + " " + direction)
 
-    if (atEnd != 0) board.accelStepperStep(deviceNumber, direction * 100000);
+    if (atEnd != 0 && !devMode) board.accelStepperStep(deviceNumber, direction * 100000);
 
     /*board.digitalRead(10, async function (value) {
         if(value == board.LOW){
@@ -157,7 +175,7 @@ function reposition(axis, dir) {
             changeDir();
             await releaseSwitch();
         }
-    });*/
+    });
 
     var endInterval = setInterval(async () => {
         if (atEnd == 0) {
@@ -178,19 +196,35 @@ function reposition(axis, dir) {
                 console.log(value);
             });
         }
-    }, 100);
+    }, 100);*/
     }
 }
 
 function stop() {
     shouldMove = false;
+    if(!devMode) {
+        board.accelStepperAcceleration(0, 0);
+        board.accelStepperSpeed(0, 2000);
+        board.accelStepperAcceleration(1, 0);
+        board.accelStepperSpeed(1, 2000);
+        board.accelStepperAcceleration(2, 0);
+        board.accelStepperSpeed(2, 2000);
+        board.accelStepperStop(0);
+        board.accelStepperStop(1);
+        board.accelStepperStop(2);
+        board.accelStepperStep(0, direction * 1);
+        board.accelStepperStep(1, direction * 1);
+        board.accelStepperStep(2, direction * 1);
+    }   
 }
 
 function getPos(device) {
     return new Promise(function(resolve){
-        board.accelStepperReportPosition(device, value => {
+        if(!devMode) {
+            board.accelStepperReportPosition(device, value => {
             resolve(value);
         });
+    }else resolve(Math.floor(Math.random() * 1000));
     })
     
 }
@@ -198,7 +232,7 @@ function getPos(device) {
 function driveToStart() {
     return new Promise(async (resolve) => {
         setDirLeft();
-        board.accelStepperStep(0, direction * 100000);
+        if(!devMode){ board.accelStepperStep(0, direction * 100000);
 
         /*var end = setInterval(async () => {
             if (atEnd == 0) {
@@ -209,8 +243,21 @@ function driveToStart() {
                 resolve();
             }
         }, 100);*/
-
         board.digitalRead(10, async function (value) {
+            if(value == board.LOW){
+            board.reportDigitalPin(10, 0)
+            atEnd = 0;
+            changeDir();
+            await releaseSwitch();
+            board.reportDigitalPin(10, 1);
+            board.accelStepperZero(0);
+            atEnd = 1;
+            resolve()
+            }
+        });
+    }else resolve();
+
+        /*board.digitalRead(10, async function (value) {
             console.log(value);
             if(value == board.LOW){
                 //board.reportDigitalPin(10, 0)
@@ -219,7 +266,7 @@ function driveToStart() {
                 board.accelStepperZero(0);
                 resolve();
             }
-        });
+        });*/
     });
 }
 
@@ -264,18 +311,22 @@ async function driveToPosition(position) {
 
 function stepTo(motor, position) {
     return new Promise(function (resolve) {
+        if(!devMode){
         board.accelStepperTo(motor, position, function () {
             resolve();
         })
+    }else resolve();
     });
 }
 
 function releaseSwitch() {
     return new Promise(function (resolve) {
-        board.accelStepperStep(0, direction * 200, function () {
+        if(!devMode){
+            board.accelStepperStep(0, direction * 200, function () {
             console.log("finish");
             resolve();
         });
+    } else resolve();
     });
 
 }
