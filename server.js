@@ -27,7 +27,7 @@ process.on('beforeExit', (code) => {
 
 var motorDriver = require('./arduinoDriver');
 var planer = require('./planer');
-//var camera = require('./cam.js');
+var camera = require('./cam.js');
 
 
 var host = process.env.HOST || '0.0.0.0';
@@ -56,7 +56,7 @@ io.on('connection', function (socket) {
     
     global.socket = socket;
     planer.initSocket(socket);
-    //camera.initSocket(socket);
+    camera.initSocket(socket);
     motorDriver.initSocket(socket);
 
     socket.emit('connection_s_to_c', {
@@ -88,6 +88,10 @@ io.on('connection', function (socket) {
 
     socket.on('shutdown', function(){
         exec('shutdown now', function(error, stdout, stderr){ callback(stdout); });
+    })
+
+    socket.on('reboot', function(){
+        exec('reboot', function(error, stdout, stderr){ callback(stdout); });
     })
     
     //for planer

@@ -99,16 +99,23 @@ if(!devMode) board.on("ready", () => {
     board.accelStepperSpeed(2, 1000);
     board.pinMode(10, board.MODES.INPUT);
 
-    /*board.digitalRead(10, async function (value) {
+    board.digitalRead(10, async function (value) {
         if(value == board.LOW){
         board.reportDigitalPin(10, 0)
+        board.accelStepperAcceleration(0, 0);
+        board.accelStepperSpeed(0, 2000);
         atEnd = 0;
         changeDir();
         await releaseSwitch();
-        board.reportDigitalPin(10, 1);
+        if(!initialized){
+            board.accelStepperZero(0);
+            initialized = true;
+            global.socket.emit('initDone');
+        }
+        //board.reportDigitalPin(10, 1);
         atEnd = 1;
         }
-    });*/
+    });
 });
 
 
@@ -212,9 +219,9 @@ function stop() {
         board.accelStepperStop(0);
         board.accelStepperStop(1);
         board.accelStepperStop(2);
-        board.accelStepperStep(0, direction * 1);
-        board.accelStepperStep(1, direction * 1);
-        board.accelStepperStep(2, direction * 1);
+        board.accelStepperStep(0, direction * 0);
+        board.accelStepperStep(1, direction * 0);
+        board.accelStepperStep(2, direction * 0);
     }   
 }
 
@@ -233,6 +240,7 @@ function driveToStart() {
     return new Promise(async (resolve) => {
         setDirLeft();
         if(!devMode){ board.accelStepperStep(0, direction * 100000);
+            resolve();
 
         /*var end = setInterval(async () => {
             if (atEnd == 0) {
@@ -243,7 +251,7 @@ function driveToStart() {
                 resolve();
             }
         }, 100);*/
-        board.digitalRead(10, async function (value) {
+        /*board.digitalRead(10, async function (value) {
             if(value == board.LOW){
             board.reportDigitalPin(10, 0)
             atEnd = 0;
@@ -254,7 +262,7 @@ function driveToStart() {
             atEnd = 1;
             resolve()
             }
-        });
+        });*/
     }else resolve();
 
         /*board.digitalRead(10, async function (value) {
@@ -323,7 +331,8 @@ function releaseSwitch() {
     return new Promise(function (resolve) {
         if(!devMode){
             board.accelStepperStep(0, direction * 200, function () {
-            console.log("finish");
+                board.reportDigitalPin(10, 1);
+                console.log("released Switch");
             resolve();
         });
     } else resolve();

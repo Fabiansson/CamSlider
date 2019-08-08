@@ -1,12 +1,12 @@
 const {
     spawn
 } = require('child_process');
-//var usb = require('usb')
+var usb = require('usb')
 var fs = require('fs');
 var gphoto2 = require('gphoto2');
 var im = require('imagemagick');
 var GPhoto = new gphoto2.GPhoto2();
-//var reset = require("reset-usb");
+var reset = require("reset-usb");
 
 var camera = null;
 
@@ -31,9 +31,19 @@ function initSocket(socket){
         })
     })
 
+    socket.on('takeReferencePicture', async () => {
+        console.log("Take Reference Picture");
+        try{
+            await takeReferencePicture();
+        }catch(er){
+            console.log(er);
+        }
+        
+    })
+
 }
 
-var CONFIGS = [
+var CONFIGS = undefined; /*= [
     ["1/8000", '100'],
     ["1/6400", '100'],
     ["1/5000", '100'],
@@ -102,33 +112,44 @@ var CONFIGS = [
     ["40/10", '10000'],
     ["40/10", '12800'],
     ["40/10", '16000']
-];
+];*/
 
 
-/*resetCamera()
+resetCamera()
     .then(success => {
         console.log('Camera conected: ' + success);
     }).catch(er => {
         console.log(er.message);
     });
 
-usb.on('attach', function (device) {
+usb.on('attach', async function (device) {
+    await sleep(5000);
     GPhoto.list(function (list) {
+        console.log(list);
         if (list.length === 0) return;
         camera = list[0];
+        if(CONFIGS == undefined){
+            getCameraOptions();
+        }
+        global.socket.emit('hasCamera', {
+            hasCamera: camera != null
+        })
         console.log('Found', camera.model);
     });
 });
 
 usb.on('detach', function (device) {
     camera = null;
+    global.socket.emit('hasCamera', {
+        hasCamera: camera != null
+    })
     console.log('Camera disconected');
-});*/
+});
 
 function resetCamera() {
     return new Promise(async (resolve, reject) => {
         try {
-            /*var id = await getUsbID();
+            var id = await getUsbID();
 
             reset('/dev/bus/usb/001/' + id, function (err, data) {
                 GPhoto.list(function (list) {
@@ -138,9 +159,12 @@ function resetCamera() {
                     }
                     camera = list[0];
                     console.log('Found', camera.model);
+                    if(CONFIGS == undefined){
+                        getCameraOptions();
+                    }
                     resolve(true);
                 });
-            })*/
+            })
 
         } catch (er) {
             console.log(er.message);
@@ -321,7 +345,7 @@ function getShutterSpeed() {
         const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
 
         ls.stdout.on('data', (data) => {
-            var shutterspeed = data.toString().split('\n')[2].split(' ')[1];
+            var shutterspeed = data.toString().split('\n')[3].split(' ')[1];
             resolve(shutterspeed);
         });
 
@@ -339,7 +363,7 @@ function getIso() {
         const ls = spawn('gphoto2', ['--get-config=iso']);
 
         ls.stdout.on('data', (data) => {
-            var iso = data.toString().split('\n')[2].split(' ')[1];
+            var iso = data.toString().split('\n')[3].split(' ')[1];
             resolve(iso);
         });
         ls.stderr.on('data', (data) => {
@@ -399,6 +423,74 @@ function searchConfig(shutterSpeed, iso) {
     return step;
 }
 
+function getCameraOptions(){
+    return new Promise(async function (resolve, reject) {
+        var shutterSpeedOptions = await getShutterSpeedOptions();
+        var isoOptions = await getIsoOptions();
+
+        var options = []
+
+        for(var i = 0; i < (shutterSpeedOptions.length + isoOptions.length); i++){
+            var option;
+
+            if(shutterSpeedOptions[i] != undefined){
+                option = [shutterSpeedOptions[i], isoOptions[0]]
+            }else if(isoOptions[i + 1 - shutterSpeedOptions.length] != undefined){
+                option = [shutterSpeedOptions[shutterSpeedOptions.length - 1], isoOptions[i + 1 - shutterSpeedOptions.length]];
+            }
+            options.push(option);
+        }
+        CONFIGS = options;
+    });
+}
+
+function getShutterSpeedOptions(){
+    return new Promise(function (resolve, reject) {
+        var shutterSpeedOptions = [];
+
+        const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
+
+        ls.stdout.on('data', (data) => {
+            var lines = data.toString().split('\n');
+            for(var i = 0; i < lines.length; i++){
+                if(lines[i].startsWith('Choice:')){
+                    var shutterspeed = lines[i].split(' ')[2];
+                    if(shutterspeed == '5') break;
+                    if(shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(shutterspeed);
+                }
+            }
+            resolve(shutterSpeedOptions);
+        });
+
+        ls.stderr.on('data', (data) => {
+            reject(new Error("Could not get shutterSpeedOptions"))
+        });
+    });
+}
+
+function getIsoOptions(){
+    return new Promise(function (resolve, reject) {
+        var isoOptions = [];
+
+        const ls = spawn('gphoto2', ['--get-config=iso']);
+
+        ls.stdout.on('data', (data) => {
+            var lines = data.toString().split('\n');
+            for(var i = 0; i < lines.length; i++){
+                if(lines[i].startsWith('Choice:')){
+                    var iso = lines[i].split(' ')[2];
+                    if(iso != 'Time' && iso != 'Bulb') isoOptions.push(iso);
+                }
+            }
+            resolve(isoOptions);
+        });
+
+        ls.stderr.on('data', (data) => {
+            reject(new Error("Could not get isoOptions"))
+        });
+    });
+}
+
 function getTime() {
     var today = new Date();
     var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
@@ -422,11 +514,11 @@ function getUsbID() {
     return new Promise(function (resolve, reject) {
         var devices = usb.getDeviceList();
 
-        for (var i = 0; i < 15; i++) {
+        for (var i = 0; i < 25; i++) {
             if (devices[i] != undefined) {
                 var id = fill(devices[i]['deviceAddress'].toString().replace(/\D/g, ''), 3);
 
-                if (id > 4) {
+                if (id > 5) {
                     resolve(id);
                     return;
                 }
@@ -444,6 +536,10 @@ function fill(n, width, z) {
     z = z || '0';
     n = n + '';
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
