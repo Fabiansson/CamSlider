@@ -1,6 +1,6 @@
 const devMode = false;
 //var motor = require('./motorDriver');
-//var camera = require('./cam.js');
+var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
 
 /*var buttonPin = 37;
@@ -93,8 +93,6 @@ function initSocket(socket){
     
     socket.on('abort', async function () {
         abort = true;
-        await motor.driveToPosition([0, 0, 0]);
-        softReset();
     })
     
     socket.on('panoramaInfo', function(){
@@ -501,7 +499,7 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
     console.log(timelapseWaypoints);
 
-    if(!devMode) await motor.driveToPosition([0,0,0]);
+    //if(!devMode) await motor.driveToPosition([0,0,0]);
 
     /*socket.emit('timelapseInfo', {
         waypoints: waypoints,
@@ -528,6 +526,9 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
 
         if (abort) {
             console.log("Timelapse aborted!");
+            await motor.driveToPosition([0, 0, 0]);
+            softReset();
+            global.socket.emit('initDone');
             return;
         }
 
@@ -573,6 +574,8 @@ async function panorama(config, interval, cameraControl, hdr, index, single) {
 
         if (abort) {
             console.log("Pano aborted");
+            await motor.driveToPosition([0, 0, 0]);
+            softReset();
             return;
         }
 
@@ -691,10 +694,8 @@ function softReset() {
 
     pause = false;
     busy = false;
-    abort = false;
     panoIndex = 0;
-
-    initialized = false;
+    abort = false;
 }
 
 async function test() {
