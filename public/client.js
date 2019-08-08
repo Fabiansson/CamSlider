@@ -12,6 +12,10 @@ function back() {
     })
 }
 
+function shutdown(){
+    socket.emit('shutdown');
+}
+
 function initialize() {
     var mode = null;
     var control = null;
@@ -27,21 +31,6 @@ function initialize() {
             mode: mode,
             control: control
         });
-        socket.on('initializeDone', function (data) {
-            console.log("init done");
-            $('#init').removeClass("is-loading");
-            if (data.success) {
-                console.log("Initialization successful.");
-                var step = '' + mode + '_' + control;
-                socket.emit('updateStep', {
-                    step: step,
-                    oldStep: 'init'
-                });
-                renderContent(step);
-            } else {
-                alert("No camera found. Or other problem with initialization.");
-            }
-        })
     }
 }
 
@@ -77,6 +66,22 @@ $(document).ready(function () {
             hello: 'server'
         });*/
     });
+
+    socket.on('initializeDone', function (data) {
+        console.log("init done");
+        $('#init').removeClass("is-loading");
+        if (data.success) {
+            console.log("Initialization successful.");
+            var step = '' + data.mode + '_' + data.control;
+            socket.emit('updateStep', {
+                step: step,
+                oldStep: 'init'
+            });
+            renderContent(step);
+        } else {
+            alert("No camera found. Or other problem with initialization.");
+        }
+    })
 });
 
 window.addEventListener('load', function () {

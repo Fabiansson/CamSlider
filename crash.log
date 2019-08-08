@@ -1,0 +1,14 @@
+PID 3427 received SIGSEGV for address: 0x4
+/root/CamSlider/node_modules/segfault-handler/build/Release/segfault-handler.node(+0x2418)[0x76323418]
+/lib/arm-linux-gnueabihf/libc.so.6(__default_rt_sa_restorer+0x0)[0x76b626c0]
+PID 22745 received SIGSEGV for address: 0x8
+0   segfault-handler.node               0x00000001039a20f8 _ZL16segfault_handleriP9__siginfoPv + 312
+1   libsystem_platform.dylib            0x00007fff772b1f5a _sigtramp + 26
+2   ???                                 0x0000000103a1def8 0x0 + 4355907320
+3   node                                0x000000010076683c uv__io_poll + 1704
+4   node                                0x00000001007577c9 uv_run + 314
+5   node                                0x0000000100040407 _ZN4node5StartEPN2v87IsolateEPNS_11IsolateDataERKNSt3__16vectorINS5_12basic_stringIcNS5_11char_traitsIcEENS5_9allocatorIcEEEENSA_ISC_EEEESG_ + 1127
+6   node                                0x000000010003f4c6 _ZN4node5StartEP9uv_loop_sRKNSt3__16vectorINS2_12basic_stringIcNS2_11char_traitsIcEENS2_9allocatorIcEEEENS7_IS9_EEEESD_ + 333
+7   node                                0x000000010003f13f _ZN4node5StartEiPPc + 241
+8   libdyld.dylib                       0x00007fff76fa3015 start + 1
+9   ???                                 0x0000000000000002 0x0 + 2

@@ -1,35 +1,50 @@
-html, body {
-    height: 100% !important; 
+html,
+body {
+    height: 100% !important;
     overflow: hidden !important;
     /*position: fixed !important;*/
     margin: 0;
-    background-color: rgb(250, 250, 250);
+    color: white;
+    background-image: linear-gradient(to bottom, #434343 0%, black 100%);
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
 }
-.navbar{
-    background-color: #C3DFE0;
-    
+
+.title,
+.subtitle{
+    color: white;
 }
-.navbar-burger{
+
+.navbar {
+    background-image: linear-gradient(to top, #c4c5c7 0%, #dcdddf 52%, #ebebeb 100%);
+}
+
+.navbar-burger {
     width: auto;
 }
-section{
+
+section {
     padding-top: 1em !important;
 }
-.control label{
+
+.control label {
     margin-bottom: .8rem !important;
 }
 
-button{
+button {
     /*margin-top: 5px;*/
     padding-left: 20px !important;
-    padding-right: 20px !important; 
+    padding-right: 20px !important;
 }
 
-progress{
+progress {
     margin-top: 5px;
 }
 
-div#joystick{
+div#joystick {
     width: 100%;
     height: 8rem;
 }
