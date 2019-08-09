@@ -98,6 +98,12 @@ if(!devMode) board.on("ready", () => {
     board.accelStepperSpeed(1, 1000);
     board.accelStepperSpeed(2, 1000);
     board.pinMode(13, board.MODES.INPUT);
+    board.pinMode(4, board.MODES.OUTPUT);
+    board.pinMode(7, board.MODES.OUTPUT);
+    board.pinMode(10, board.MODES.OUTPUT);
+    board.digitalWrite(4, board.LOW);
+    board.digitalWrite(7, board.LOW);
+    board.digitalWrite(10, board.LOW);
 
     board.digitalRead(13, async function (value) {
         if(value == board.LOW){
