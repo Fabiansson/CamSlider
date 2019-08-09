@@ -97,11 +97,11 @@ if(!devMode) board.on("ready", () => {
     board.accelStepperSpeed(0, 1000);
     board.accelStepperSpeed(1, 1000);
     board.accelStepperSpeed(2, 1000);
-    board.pinMode(10, board.MODES.INPUT);
+    board.pinMode(13, board.MODES.INPUT);
 
-    board.digitalRead(10, async function (value) {
+    board.digitalRead(13, async function (value) {
         if(value == board.LOW){
-        board.reportDigitalPin(10, 0)
+        board.reportDigitalPin(13, 0)
         board.accelStepperAcceleration(0, 0);
         board.accelStepperSpeed(0, 2000);
         atEnd = 0;
@@ -331,7 +331,7 @@ function releaseSwitch() {
     return new Promise(function (resolve) {
         if(!devMode){
             board.accelStepperStep(0, direction * 200, function () {
-                board.reportDigitalPin(10, 1);
+                board.reportDigitalPin(13, 1);
                 console.log("released Switch");
             resolve();
         });
