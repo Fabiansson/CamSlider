@@ -8,15 +8,15 @@ if(!devMode) {
         deviceNum: 0, // <number> Device number for the stepper (range 0-9)
         type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
         //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
-        stepPin: 2, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
-        directionPin: 3, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
+        stepPin: 3, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
+        directionPin: 2, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
     };
     
     var yMotor = {
         deviceNum: 1, // <number> Device number for the stepper (range 0-9)
         type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
         //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
-        stepPin: 4, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
+        stepPin: 6, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
         directionPin: 5, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
     };
     
@@ -24,8 +24,8 @@ if(!devMode) {
         deviceNum: 2, // <number> Device number for the stepper (range 0-9)
         type: board.STEPPER.TYPE.DRIVER, // <number> (optional) Type of stepper or controller; default is FOUR_WIRE
         //stepSize: board.STEPPER.STEP_SIZE.HALF, // <number> (optional) Size of step; default is WHOLE
-        stepPin: 6, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
-        directionPin: 7, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
+        stepPin: 9, // <number> (required if type === DRIVER) The step pin for a step+direction stepper driver
+        directionPin: 8, // <number> (required if type === DRIVER) The direction pin for a step+direction stepper driver
     };
 }
 
