@@ -94,7 +94,7 @@ if(!devMode) board.on("ready", () => {
     board.accelStepperConfig(xMotor);
     board.accelStepperConfig(yMotor);
     board.accelStepperConfig(zMotor);
-    board.accelStepperSpeed(0, 2000);
+    board.accelStepperSpeed(0, 1000);
     board.accelStepperSpeed(1, 1000);
     board.accelStepperSpeed(2, 1000);
     board.pinMode(10, board.MODES.INPUT);
