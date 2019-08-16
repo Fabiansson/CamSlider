@@ -1,6 +1,6 @@
 const devMode = false;
 //var motor = require('./motorDriver');
-var camera = require('./cam.js');
+var camera = require('./cam.js'); //IS IF !DEVMODE
 var motor = require('./arduinoDriver');
 
 /*var buttonPin = 37;
@@ -630,7 +630,7 @@ function sleep(ms) {
 function getDistance(point1, point2) {
     // speed in 3d space is mutated according only to the X distance,
     // to keep speed constant in X dimension
-    return Math.abs(point1[0] - point2[0]);
+    return point2[0] - point1[0];
 }
 
 function generateWaypopints(points, n) {

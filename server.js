@@ -5,7 +5,6 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var exec = require('child_process').exec;
 const process = require('process');
-var errorhandler = require('errorhandler');
 
 process.on('beforeExit', (code) => {
     console.log('Process beforeExit event with code: ', code);
@@ -27,7 +26,7 @@ process.on('beforeExit', (code) => {
 
 var motorDriver = require('./arduinoDriver');
 var planer = require('./planer');
-var camera = require('./cam.js');
+var camera = require('./cam.js'); //IS IF !DEVMODE
 
 
 var host = process.env.HOST || '0.0.0.0';
@@ -37,7 +36,6 @@ server.listen(port, host, function () {
     console.log("Server running on: " + host + " : " + port);
 });
 
-app.use(errorhandler())
 //Serving directory
 app.use(express.static('public'));
 
@@ -56,7 +54,7 @@ io.on('connection', function (socket) {
     
     global.socket = socket;
     planer.initSocket(socket);
-    camera.initSocket(socket);
+    camera.initSocket(socket); //IS IF !DEVMODE
     motorDriver.initSocket(socket);
 
     socket.emit('connection_s_to_c', {
