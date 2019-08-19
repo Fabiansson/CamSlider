@@ -114,13 +114,19 @@ var CONFIGS = undefined; /*= [
     ["40/10", '16000']
 ];*/
 
-
-resetCamera()
-    .then(success => {
-        console.log('Camera conected: ' + success);
-    }).catch(er => {
+killProcess()
+    .then(resetCamera()
+        .then(success => {
+            console.log('Camera conected: ' + success);
+        }).catch(er => {
+            console.log(er.message);
+    }))
+    .catch(er => {
         console.log(er.message);
     });
+
+
+
 
 usb.on('attach', async function (device) {
     await sleep(5000);
@@ -145,6 +151,21 @@ usb.on('detach', function (device) {
     })
     console.log('Camera disconected');
 });
+
+function killProcess() {
+    return new Promise(function (resolve, reject) {
+        const ls = spawn('pgrep', ['gvfsd-gphoto2']);
+
+        ls.stdout.on('data', (pid) => {
+            process.kill(pid, 'SIGHUP');
+            resolve();
+        });
+        ls.stderr.on('data', (data) => {
+            console.log(data);
+            reject(new Error("Could not terminate GPhoto process."))
+        });
+    })
+}
 
 function resetCamera() {
     return new Promise(async (resolve, reject) => {
