@@ -130,6 +130,7 @@ killProcess()
 
 usb.on('attach', async function (device) {
     await sleep(5000);
+    await killProcess();
     GPhoto.list(function (list) {
         console.log(list);
         if (list.length === 0) return;
