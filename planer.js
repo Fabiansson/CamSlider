@@ -109,7 +109,7 @@ function initSocket(socket){
 
     socket.on('timelapse', function (data) {
         console.log("Starting Plan");
-        console.log(data.interval + " " + data.recordTime + " " + data.movieTime + " " + data.cameraControl + " " + data.ramping);
+        console.log(data.interval + " " + data.movieTime + " " + data.cameraControl + " " + data.ramping);
         timelapse(data.interval, data.movieTime, data.cameraControl, data.ramping);
     })
     
@@ -540,6 +540,7 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
             max: timelapseWaypoints.length
         })
     }
+    console.log('Timelapse done!');
 }
 
 async function panorama(config, interval, cameraControl, hdr, index, single) {

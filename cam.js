@@ -339,7 +339,7 @@ function takePictureAndDownload(keep) {
         }, function (er, data) {
             if (er) reject(er);
             if (!fs.existsSync(imagesPath)) {
-                fs.mkdirSync(imagesPath);
+                fs.mkdirSync(imagesPath, {recursive: true});
             }
             var path = imagesPath + '/' + shotTime + '.JPG';
             fs.writeFileSync(path, data);
@@ -539,8 +539,9 @@ function getUsbID() {
         for (var i = 0; i < 25; i++) {
             if (devices[i] != undefined) {
                 var id = fill(devices[i]['deviceAddress'].toString().replace(/\D/g, ''), 3);
+                var idVendor = devices[i]['deviceDescriptor']['idVendor'];
 
-                if (id > 5) {
+                if (id > 4 && idVendor != 1060 && idVendor != 7531 && idVendor != 6790) {
                     resolve(id);
                     return;
                 }
