@@ -118,6 +118,7 @@ killProcess()
     .then(resetCamera()
         .then(success => {
             console.log('Camera conected: ' + success);
+            console.log('Camera Options: ' + CONFIGS);
         }).catch(er => {
             console.log(er.message);
     }))
