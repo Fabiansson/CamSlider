@@ -118,7 +118,6 @@ killProcess()
     .then(resetCamera()
         .then(success => {
             console.log('Camera conected: ' + success);
-            console.log('Camera Options: ' + CONFIGS);
         }).catch(er => {
             console.log(er.message);
     }))
@@ -464,6 +463,7 @@ function getCameraOptions(){
             options.push(option);
         }
         CONFIGS = options;
+        console.log('Camera Options: ' + CONFIGS);
     });
 }
 
@@ -543,6 +543,7 @@ function getUsbID() {
                 var idVendor = devices[i]['deviceDescriptor']['idVendor'];
 
                 if (id > 4 && idVendor != 1060 && idVendor != 7531 && idVendor != 6790) {
+                    console.log('gotID: ' + id);
                     resolve(id);
                     return;
                 }
