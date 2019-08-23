@@ -1,6 +1,5 @@
-const devMode = false;
 //var motor = require('./motorDriver');
-var camera = require('./cam.js'); //IS IF !DEVMODE
+var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
 
 /*var buttonPin = 37;
@@ -129,10 +128,10 @@ function initSocket(socket){
         softReset();
     })
 
-    socket.on('test', function () {
+    /*socket.on('test', function () {
         console.log("TEST RUN!");
         test();
-    })
+    })*/
 
     /*socket.on('init', async function(){
         if(!initialized) await initTimelapse();
@@ -509,10 +508,10 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     for (var i = 0; i < timelapseWaypoints.length; i++) {
         console.log("Drive to " + timelapseWaypoints[i]);
         var timeToMove = sleep(2000);
-        if(!devMode) var move = motor.driveToPosition(timelapseWaypoints[i]);
+        var move = motor.driveToPosition(timelapseWaypoints[i]);
 
         await timeToMove;
-        if(!devMode) await move;
+        await move;
 
         if (cameraControl && ramping && (i % 5 == 0)) {
             console.log("takePictureWithRamping true");
@@ -554,7 +553,7 @@ async function panorama(config, interval, cameraControl, hdr, index, single) {
     for (var i = index; i < limit; i++) {
         busy = true;
         console.log("Drive to " + waypoints[i]);
-        if(!devMode) await motor.driveToPosition(waypoints[i])
+        await motor.driveToPosition(waypoints[i])
         await sleep(1000);
         global.socket.emit('progress', {
             value: i,
