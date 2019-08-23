@@ -1,3 +1,4 @@
+var devMode = false;
 const {
     spawn
 } = require('child_process');
@@ -5,8 +6,8 @@ var usb = require('usb')
 var fs = require('fs');
 var gphoto2 = require('gphoto2');
 var im = require('imagemagick');
-var GPhoto = new gphoto2.GPhoto2();
-var reset = require("reset-usb");
+if (!devMode) var GPhoto = new gphoto2.GPhoto2();
+if(!devMode) var reset = require("reset-usb");
 
 var camera = null;
 
@@ -22,7 +23,7 @@ var currentStep = 21;
 
 var socket;
 
-function initSocket(socket){
+function initSocket(socket) {
     socket = socket;
 
     socket.on('requestCamera', function () {
@@ -33,17 +34,18 @@ function initSocket(socket){
 
     socket.on('takeReferencePicture', async () => {
         console.log("Take Reference Picture");
-        try{
+        try {
             await takeReferencePicture();
-        }catch(er){
+        } catch (er) {
             console.log(er);
         }
-        
+
     })
 
 }
 
-var CONFIGS = undefined; /*= [
+var CONFIGS = undefined;
+/*= [
     ["1/8000", '100'],
     ["1/6400", '100'],
     ["1/5000", '100'],
@@ -120,7 +122,7 @@ killProcess()
             console.log('Camera conected: ' + success);
         }).catch(er => {
             console.log(er.message);
-    }))
+        }))
     .catch(er => {
         console.log(er.message);
     });
@@ -128,21 +130,24 @@ killProcess()
 
 
 
+
 usb.on('attach', async function (device) {
     await sleep(5000);
     await killProcess();
-    GPhoto.list(function (list) {
-        console.log(list);
-        if (list.length === 0) return;
-        camera = list[0];
-        if(CONFIGS == undefined){
-            getCameraOptions();
-        }
-        global.socket.emit('hasCamera', {
-            hasCamera: camera != null
-        })
-        console.log('Found', camera.model);
-    });
+    if (!devMode) {
+        GPhoto.list(function (list) {
+            console.log(list);
+            if (list.length === 0) return;
+            camera = list[0];
+            if (CONFIGS == undefined) {
+                getCameraOptions();
+            }
+            global.socket.emit('hasCamera', {
+                hasCamera: camera != null
+            })
+            console.log('Found', camera.model);
+        });
+    }
 });
 
 usb.on('detach', function (device) {
@@ -171,23 +176,24 @@ function killProcess() {
 function resetCamera() {
     return new Promise(async (resolve, reject) => {
         try {
-            var id = await getUsbID();
+            if (!devMode) {
+                var id = await getUsbID();
 
-            reset('/dev/bus/usb/001/' + id, function (err, data) {
-                GPhoto.list(function (list) {
-                    if (list.length === 0) {
-                        reject(new Error("No camera conected"));
-                        return;
-                    }
-                    camera = list[0];
-                    console.log('Found', camera.model);
-                    if(CONFIGS == undefined){
-                        getCameraOptions();
-                    }
-                    resolve(true);
-                });
-            })
-
+                reset('/dev/bus/usb/001/' + id, function (err, data) {
+                    GPhoto.list(function (list) {
+                        if (list.length === 0) {
+                            reject(new Error("No camera conected"));
+                            return;
+                        }
+                        camera = list[0];
+                        console.log('Found', camera.model);
+                        if (CONFIGS == undefined) {
+                            getCameraOptions();
+                        }
+                        resolve(true);
+                    });
+                })
+            } else resolve(true);
         } catch (er) {
             console.log(er.message);
             reject(new Error("No camera conected"));
@@ -199,13 +205,15 @@ function resetCamera() {
 function takePicture() {
     // Take picture without downloading immediately
     return new Promise(function (resolve, reject) {
-        camera.takePicture({
-            download: false
-        }, function (er, path) {
-            if (er) {
-                reject(er);
-            } else resolve();
-        });
+        if (!devMode) {
+            camera.takePicture({
+                download: false
+            }, function (er, path) {
+                if (er) {
+                    reject(er);
+                } else resolve();
+            });
+        } else resolve();
     });
 }
 
@@ -333,18 +341,22 @@ async function takePictureWithHdr() {
 function takePictureAndDownload(keep) {
     return new Promise(function (resolve, reject) {
         shotTime = getTime();
-        camera.takePicture({
-            download: true,
-            keep: keep
-        }, function (er, data) {
-            if (er) reject(er);
-            if (!fs.existsSync(imagesPath)) {
-                fs.mkdirSync(imagesPath, {recursive: true});
-            }
-            var path = imagesPath + '/' + shotTime + '.JPG';
-            fs.writeFileSync(path, data);
-            resolve(path);
-        });
+        if (!devMode) {
+            camera.takePicture({
+                download: true,
+                keep: keep
+            }, function (er, data) {
+                if (er) reject(er);
+                if (!fs.existsSync(imagesPath)) {
+                    fs.mkdirSync(imagesPath, {
+                        recursive: true
+                    });
+                }
+                var path = imagesPath + '/' + shotTime + '.JPG';
+                fs.writeFileSync(path, data);
+                resolve(path);
+            });
+        } else resolve('/');
     });
 }
 
@@ -364,16 +376,19 @@ function getShutterSpeed() {
         console.log(settings.main.capturesettings.shutterspeed2.value);
     });*/
     return new Promise(function (resolve, reject) {
-        const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
+        if (!devMode) {
+            const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
 
-        ls.stdout.on('data', (data) => {
-            var shutterspeed = data.toString().split('\n')[3].split(' ')[1];
-            resolve(shutterspeed);
-        });
+            ls.stdout.on('data', (data) => {
+                var shutterspeed = data.toString().split('\n')[3].split(' ')[1];
+                resolve(shutterspeed);
+            });
 
-        ls.stderr.on('data', (data) => {
-            reject(new Error("Could not get shutterSpeed"))
-        });
+            ls.stderr.on('data', (data) => {
+                reject(new Error("Could not get shutterSpeed"))
+            });
+        }
+        if (devMode) resolve('1/4');
     });
 }
 
@@ -382,54 +397,63 @@ function getIso() {
         console.log(settings.main.imgsettings.iso.value);
     });*/
     return new Promise(function (resolve, reject) {
-        const ls = spawn('gphoto2', ['--get-config=iso']);
+        if (!devMode) {
+            const ls = spawn('gphoto2', ['--get-config=iso']);
 
-        ls.stdout.on('data', (data) => {
-            var iso = data.toString().split('\n')[3].split(' ')[1];
-            resolve(iso);
-        });
-        ls.stderr.on('data', (data) => {
-            console.log(data);
-            reject(new Error("Could not get iso"))
-        });
+            ls.stdout.on('data', (data) => {
+                var iso = data.toString().split('\n')[3].split(' ')[1];
+                resolve(iso);
+            });
+            ls.stderr.on('data', (data) => {
+                console.log(data);
+                reject(new Error("Could not get iso"))
+            });
+        }
+        if (devMode) resolve('100');
     });
 }
 
 function setIso(iso) {
     return new Promise(function (resolve, reject) {
-        camera.setConfigValue('iso', iso, function (er) {
-            if (er) {
-                reject(er);
-            } else {
-                resolve();
-            }
-        });
+        if (!devMode) {
+            camera.setConfigValue('iso', iso, function (er) {
+                if (er) {
+                    reject(er);
+                } else {
+                    resolve();
+                }
+            });
+        } else resolve();
     });
 }
 
 function setShutterSpeed(shutterSpeed) {
     return new Promise(function (resolve, reject) {
-        camera.setConfigValue('shutterspeed', shutterSpeed, function (er) {
-            if (er) {
-                reject(er);
-            } else {
-                resolve();
-            }
-        });
+        if (!devMode) {
+            camera.setConfigValue('shutterspeed', shutterSpeed, function (er) {
+                if (er) {
+                    reject(er);
+                } else {
+                    resolve();
+                }
+            });
+        } else resolve();
     });
 }
 
 function analyseImage(path) {
     return new Promise(function (resolve, reject) {
-        im.identify(['-format', '%[mean]', path], function (err, output) {
-            if (err) {
-                reject(err);
-                throw err;
+        if (!devMode) {
+            im.identify(['-format', '%[mean]', path], function (err, output) {
+                if (err) {
+                    reject(err);
+                    throw err;
 
-            }
-            console.log('Brightness: ' + output);
-            resolve(output)
-        });
+                }
+                console.log('Brightness: ' + output);
+                resolve(output)
+            });
+        } else resolve(30000);
     });
 }
 
@@ -445,19 +469,19 @@ function searchConfig(shutterSpeed, iso) {
     return step;
 }
 
-function getCameraOptions(){
+function getCameraOptions() {
     return new Promise(async function (resolve, reject) {
         var shutterSpeedOptions = await getShutterSpeedOptions();
         var isoOptions = await getIsoOptions();
 
         var options = []
 
-        for(var i = 0; i < (shutterSpeedOptions.length + isoOptions.length); i++){
+        for (var i = 0; i < (shutterSpeedOptions.length + isoOptions.length); i++) {
             var option;
 
-            if(shutterSpeedOptions[i] != undefined){
+            if (shutterSpeedOptions[i] != undefined) {
                 option = [shutterSpeedOptions[i], isoOptions[0]]
-            }else if(isoOptions[i + 1 - shutterSpeedOptions.length] != undefined){
+            } else if (isoOptions[i + 1 - shutterSpeedOptions.length] != undefined) {
                 option = [shutterSpeedOptions[shutterSpeedOptions.length - 1], isoOptions[i + 1 - shutterSpeedOptions.length]];
             }
             options.push(option);
@@ -467,50 +491,56 @@ function getCameraOptions(){
     });
 }
 
-function getShutterSpeedOptions(){
+function getShutterSpeedOptions() {
     return new Promise(function (resolve, reject) {
         var shutterSpeedOptions = [];
 
-        const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
+        if (!devMode) {
+            const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
 
-        ls.stdout.on('data', (data) => {
-            var lines = data.toString().split('\n');
-            for(var i = 0; i < lines.length; i++){
-                if(lines[i].startsWith('Choice:')){
-                    var shutterspeed = lines[i].split(' ')[2];
-                    if(shutterspeed == '5') break;
-                    if(shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(shutterspeed);
+            ls.stdout.on('data', (data) => {
+                var lines = data.toString().split('\n');
+                for (var i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('Choice:')) {
+                        var shutterspeed = lines[i].split(' ')[2];
+                        if (shutterspeed == '5') break;
+                        if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(shutterspeed);
+                    }
                 }
-            }
-            resolve(shutterSpeedOptions);
-        });
+                resolve(shutterSpeedOptions);
+            });
 
-        ls.stderr.on('data', (data) => {
-            reject(new Error("Could not get shutterSpeedOptions"))
-        });
+            ls.stderr.on('data', (data) => {
+                reject(new Error("Could not get shutterSpeedOptions"))
+            });
+        }
+        if (devMode) resolve(['1/1000', '1/4']);
     });
 }
 
-function getIsoOptions(){
+function getIsoOptions() {
     return new Promise(function (resolve, reject) {
         var isoOptions = [];
 
-        const ls = spawn('gphoto2', ['--get-config=iso']);
+        if (!devMode) {
+            const ls = spawn('gphoto2', ['--get-config=iso']);
 
-        ls.stdout.on('data', (data) => {
-            var lines = data.toString().split('\n');
-            for(var i = 0; i < lines.length; i++){
-                if(lines[i].startsWith('Choice:')){
-                    var iso = lines[i].split(' ')[2];
-                    if(iso != 'Time' && iso != 'Bulb') isoOptions.push(iso);
+            ls.stdout.on('data', (data) => {
+                var lines = data.toString().split('\n');
+                for (var i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('Choice:')) {
+                        var iso = lines[i].split(' ')[2];
+                        if (iso != 'Time' && iso != 'Bulb') isoOptions.push(iso);
+                    }
                 }
-            }
-            resolve(isoOptions);
-        });
+                resolve(isoOptions);
+            });
 
-        ls.stderr.on('data', (data) => {
-            reject(new Error("Could not get isoOptions"))
-        });
+            ls.stderr.on('data', (data) => {
+                reject(new Error("Could not get isoOptions"))
+            });
+        }
+        if (devMode) resolve([100, 200]);
     });
 }
 

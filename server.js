@@ -22,12 +22,11 @@ process.on('beforeExit', (code) => {
 
   process.on('unhandledRejection', (reason, p) => {
     console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
-    // application specific logging, throwing an error, or other logic here
 });
 
 var motorDriver = require('./arduinoDriver');
 var planer = require('./planer');
-var camera = require('./cam.js'); //IS IF !DEVMODE
+var camera = require('./cam.js');
 
 
 var host = process.env.HOST || '0.0.0.0';
@@ -54,13 +53,11 @@ var navHistory = ['init']
 
 
 io.on('connection', function (socket) {
-    //var motor = motorDriver;
-
     console.log("Hallo client");
     
     global.socket = socket;
     planer.initSocket(socket);
-    camera.initSocket(socket); //IS IF !DEVMODE
+    camera.initSocket(socket);
     motorDriver.initSocket(socket);
 
     socket.emit('connection_s_to_c', {
