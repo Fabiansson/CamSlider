@@ -177,9 +177,12 @@ function resetCamera() {
     return new Promise(async (resolve, reject) => {
         try {
             if (!devMode) {
-                var id = await getUsbID();
+                //var id = await getUsbID();
+                var device = await getUsbDevice();
+                device.open();
 
-                reset('/dev/bus/usb/001/' + id, function (err, data) {
+                //reset('/dev/bus/usb/001/' + id, function (err, data) {
+                device.reset(function(err) {
                     GPhoto.list(function (list) {
                         if (list.length === 0) {
                             reject(new Error("No camera conected"));
@@ -563,11 +566,25 @@ function getFolderName() {
     return (dd + '-' + mm + '-' + yyyy);
 };
 
-function getUsbID() {
+function getUsbDevice() {
     return new Promise(function (resolve, reject) {
         var devices = usb.getDeviceList();
+        console.log(devices);
 
-        for (var i = 0; i < 25; i++) {
+        for(var i = 0; i < devices.length; i ++){
+            var idVendor = devices[i]['deviceDescriptor']['idVendor'];
+            var idProduct = devices[i]['deviceDescriptor']['idProduct'];
+
+            if (idVendor != 1060 && idVendor != 7531 && idVendor != 6790) {
+                var device = usb.findByIds(idVendor, idProduct);
+                if(device != undefined){
+                    resolve(device);
+                }
+                return;
+            }
+        }
+
+        /*for (var i = 0; i < 25; i++) {
             if (devices[i] != undefined) {
                 var id = fill(devices[i]['deviceAddress'].toString().replace(/\D/g, ''), 3);
                 var idVendor = devices[i]['deviceDescriptor']['idVendor'];
@@ -578,7 +595,7 @@ function getUsbID() {
                     return;
                 }
             }
-        }
+        }*/
         reject(new Error("Could not get USB ID"));
     });
 }
