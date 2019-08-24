@@ -11,7 +11,7 @@ if (!devMode) var GPhoto = new gphoto2.GPhoto2();
 var camera = null;
 
 var folder_name = getFolderName();
-var imagesPath = "/root/CamSlider/imagesTaken/" + folder_name;
+var imagesPath = "./imagesTaken/" + folder_name;
 var lastImage;
 
 var reference = "";
