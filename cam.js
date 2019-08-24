@@ -159,7 +159,7 @@ usb.on('detach', function (device) {
 
 function killProcess() {
     return new Promise(async function (resolve, reject) {
-        await sleep(3000);
+        await sleep(5000);
         const ls = spawn('pgrep', ['gvfsd-gphoto2']);
 
         ls.stdout.on('data', (pid) => {
@@ -190,6 +190,7 @@ function resetCamera() {
                         }
                         camera = list[0];
                         console.log('Found', camera.model);
+                        spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
                         if (CONFIGS == undefined) {
                             getCameraOptions();
                         }
