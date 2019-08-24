@@ -158,7 +158,8 @@ usb.on('detach', function (device) {
 });
 
 function killProcess() {
-    return new Promise(function (resolve, reject) {
+    return new Promise(async function (resolve, reject) {
+        await sleep(3000);
         const ls = spawn('pgrep', ['gvfsd-gphoto2']);
 
         ls.stdout.on('data', (pid) => {
