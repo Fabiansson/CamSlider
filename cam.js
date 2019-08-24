@@ -7,7 +7,6 @@ var fs = require('fs');
 var gphoto2 = require('gphoto2');
 var im = require('imagemagick');
 if (!devMode) var GPhoto = new gphoto2.GPhoto2();
-if(!devMode) var reset = require("reset-usb");
 
 var camera = null;
 
