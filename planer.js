@@ -29,6 +29,7 @@ var currentPos_y = 0;
 var currentPos_z = 0;
 
 var shouldMove;
+var running = null;
 var pause = false;
 var busy = false;
 var abort = false;
@@ -46,6 +47,11 @@ function initSocket(socket){
             z: currentPos_z
         })
     })*/
+    socket.on('requestStatus', function() {
+        socket.emit('status', {
+            running: running
+        })
+    })
 
     socket.on('points', function(data){
         positions = data.points
@@ -92,6 +98,7 @@ function initSocket(socket){
     
     socket.on('abort', async function () {
         abort = true;
+        running = null;
     })
     
     socket.on('panoramaInfo', function(){
@@ -494,6 +501,7 @@ function stop() {
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
+    running = 'timelapse';
     var amountPauses = (movieTime * 25);
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
     console.log(timelapseWaypoints);
@@ -539,11 +547,13 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
             max: timelapseWaypoints.length
         })
     }
+    running = null;
     console.log('Timelapse done!');
 }
 
 async function panorama(config, interval, cameraControl, hdr, index, single) {
     console.log('PLAN STARTING!');
+    running = 'panorama';
 
     var waypoints = generatePanoPoints(config);
     var limit = waypoints.length;
@@ -585,6 +595,10 @@ async function panorama(config, interval, cameraControl, hdr, index, single) {
             panoIndex = i + 1;
             busy = false
             return;
+        }
+        if (!single && i == limit - 1) {
+            console.log('PANORAMA DONE');
+            running = null;
         }
     }
     busy = false;

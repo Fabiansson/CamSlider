@@ -42,14 +42,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/*', function (req, res) {
     console.log(__dirname);
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
+});
 
 SegfaultHandler.registerHandler("crash.log");
-
-var oldStep = null;
-var currentStep = 'init';
-var navHistory = ['init']
-
 
 
 io.on('connection', function (socket) {
@@ -60,19 +55,21 @@ io.on('connection', function (socket) {
     camera.initSocket(socket);
     motorDriver.initSocket(socket);
 
-    socket.emit('connection_s_to_c', {
-        step: navHistory[navHistory.length - 1]
+    /*socket.emit('connection_s_to_c', {
+        //step: navHistory[navHistory.length - 1]
+        route: currentRoute
     });
 
     socket.on('requestRoute', function(){
         socket.emit('route', {
-            route: 'timelapse'
+            route: currentRoute
         })
     })
 
-    socket.on('updateStep', function (data) {
-        console.log('Current step: ' + data.step + ' Old Step: ' + data.oldStep);
-        navHistory.push(data.step);
+    socket.on('updateRoute', function (data) {
+        console.log('Current step: ' + data.route);
+        currentRoute = data.route;
+        navHistory.push(data.route);
     });
     
     socket.on('goBack', function () {
@@ -85,7 +82,7 @@ io.on('connection', function (socket) {
         var temp = currentStep;
         currentStep = oldStep;
         oldStep = temp;
-    })
+    })*/
 
     socket.on('shutdown', function(){
         exec('shutdown now', function(error, stdout, stderr){ callback(stdout); });
