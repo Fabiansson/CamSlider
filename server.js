@@ -90,7 +90,8 @@ io.on('connection', function (socket) {
 
     socket.on('update', function(){
         console.log('Updating.');
-        exec(updateCommand, function(error, stdout, stderr){ callback(stdout); });
+        console.log(updateCommand);
+        exec(updateCommand, function(error, stdout, stderr){ console.log(stdout); });
     })
 
     socket.on('shutdown', function(){
