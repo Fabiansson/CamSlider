@@ -133,12 +133,14 @@ killProcess()
 usb.on('attach', async function (device) {
     await sleep(5000);
     await killProcess();
+    await sleep(1000);
     if (!devMode) {
         GPhoto.list(function (list) {
             console.log(list);
             if (list.length === 0) return;
             camera = list[0];
             if (CONFIGS == undefined) {
+                spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
                 getCameraOptions();
             }
             global.socket.emit('hasCamera', {
@@ -183,21 +185,16 @@ function resetCamera() {
 
                 //reset('/dev/bus/usb/001/' + id, function (err, data) {
                 device.reset(function(err) {
-                    GPhoto.list(function (list) {
+                    GPhoto.list(async function (list) {
                         if (list.length === 0) {
                             reject(new Error("No camera conected"));
                             return;
                         }
                         camera = list[0];
                         console.log('Found', camera.model);
-                        //spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
-                        camera.setConfigValue('capturetarget', 1, function (er) {
-                            if (er) {
-                                console.log(er);
-                                reject(er);
-                            }
-                        });
+            
                         if (CONFIGS == undefined) {
+                            spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
                             getCameraOptions();
                         }
                         resolve(true);
