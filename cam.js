@@ -136,7 +136,6 @@ usb.on('attach', async function (device) {
     await sleep(1000);
     if (!devMode) {
         GPhoto.list(function (list) {
-            console.log(list);
             if (list.length === 0) return;
             camera = list[0];
             if (CONFIGS == undefined) {
@@ -573,7 +572,6 @@ function getFolderName() {
 function getUsbDevice() {
     return new Promise(function (resolve, reject) {
         var devices = usb.getDeviceList();
-        console.log(devices);
 
         for(var i = 0; i < devices.length; i ++){
             var idVendor = devices[i]['deviceDescriptor']['idVendor'];

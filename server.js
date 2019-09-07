@@ -38,11 +38,10 @@ server.listen(port, host, function () {
 });
 
 //Serving directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'client', 'build')));
 
 app.get('/*', function (req, res) {
-    console.log(__dirname);
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
 SegfaultHandler.registerHandler("crash.log");
@@ -90,16 +89,19 @@ io.on('connection', function (socket) {
 
     socket.on('update', function(){
         console.log('Updating.');
-        console.log(updateCommand);
-        exec(updateCommand, function(error, stdout, stderr){ console.log(stdout); });
+        exec(updateCommand, function(error, stdout, stderr){ 
+            console.log('Updating done... restarting now...');
+            socket.emit('updateDone');
+            exec('reboot', function(error, stdout, stderr){ console.log(stdout); });
+        });
     })
 
     socket.on('shutdown', function(){
-        exec('shutdown now', function(error, stdout, stderr){ callback(stdout); });
+        exec('shutdown now', function(error, stdout, stderr){ console.log(stdout); });
     })
 
     socket.on('reboot', function(){
-        exec('reboot', function(error, stdout, stderr){ callback(stdout); });
+        exec('reboot', function(error, stdout, stderr){ console.log(stdout); });
     })
     
     //for planer
