@@ -191,6 +191,12 @@ function resetCamera() {
                         camera = list[0];
                         console.log('Found', camera.model);
                         spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
+                        camera.setConfigValue('capturetarget', 1, function (er) {
+                            if (er) {
+                                console.log(er);
+                                reject(er);
+                            }
+                        });
                         if (CONFIGS == undefined) {
                             getCameraOptions();
                         }
