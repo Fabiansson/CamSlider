@@ -89,15 +89,19 @@ io.on('connection', function (socket) {
 
     socket.on('update', function(){
         console.log('Updating.');
-        exec(updateCommand, function(error, stdout, stderr){ console.log(stdout); });
+        exec(updateCommand, function(error, stdout, stderr){ 
+            console.log('Updating done... restarting now...');
+            socket.emit('updateDone');
+            exec('reboot', function(error, stdout, stderr){ console.log(stdout); });
+        });
     })
 
     socket.on('shutdown', function(){
-        exec('shutdown now', function(error, stdout, stderr){ callback(stdout); });
+        exec('shutdown now', function(error, stdout, stderr){ console.log(stdout); });
     })
 
     socket.on('reboot', function(){
-        exec('reboot', function(error, stdout, stderr){ callback(stdout); });
+        exec('reboot', function(error, stdout, stderr){ console.log(stdout); });
     })
     
     //for planer
