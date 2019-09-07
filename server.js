@@ -6,6 +6,7 @@ var io = require('socket.io')(server);
 var exec = require('child_process').exec;
 const process = require('process');
 var path = require('path');
+const updateCommand = require('./config').updateCommand;
 
 process.on('beforeExit', (code) => {
     console.log('Process beforeExit event with code: ', code);
@@ -42,7 +43,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/*', function (req, res) {
     console.log(__dirname);
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  });
+});
 
 SegfaultHandler.registerHandler("crash.log");
 
@@ -85,6 +86,11 @@ io.on('connection', function (socket) {
         var temp = currentStep;
         currentStep = oldStep;
         oldStep = temp;
+    })
+
+    socket.on('update', function(){
+        console.log('Updating.');
+        exec(updateCommand, function(error, stdout, stderr){ callback(stdout); });
     })
 
     socket.on('shutdown', function(){
