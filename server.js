@@ -41,8 +41,7 @@ server.listen(port, host, function () {
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/*', function (req, res) {
-    console.log(__dirname);
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
 SegfaultHandler.registerHandler("crash.log");
@@ -90,7 +89,6 @@ io.on('connection', function (socket) {
 
     socket.on('update', function(){
         console.log('Updating.');
-        console.log(updateCommand);
         exec(updateCommand, function(error, stdout, stderr){ console.log(stdout); });
     })
 
