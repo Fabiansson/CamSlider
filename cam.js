@@ -135,7 +135,9 @@ usb.on('attach', async function (device) {
     await killProcess();
     await sleep(1000);
     if (!devMode) {
+        console.log('retrieving gphoto list');
         GPhoto.list(function (list) {
+            console.log(list);
             if (list.length === 0) return;
             camera = list[0];
             if (CONFIGS == undefined) {
@@ -171,6 +173,10 @@ function killProcess() {
             console.log(data);
             reject(new Error("Could not terminate GPhoto process."))
         });
+
+        ls.on('close', () => {
+            resolve();
+        });
     })
 }
 
@@ -179,6 +185,7 @@ function resetCamera() {
         try {
             if (!devMode) {
                 //var id = await getUsbID();
+                console.log('reseting camera');
                 var device = await getUsbDevice();
                 device.open();
 
@@ -486,7 +493,7 @@ function getCameraOptions() {
             var option;
 
             if (shutterSpeedOptions[i] != undefined) {
-                option = [shutterSpeedOptions[i], isoOptions[0]]
+                option = [shutterSpeedOptions[i], isoOptions[0]];
             } else if (isoOptions[i + 1 - shutterSpeedOptions.length] != undefined) {
                 option = [shutterSpeedOptions[shutterSpeedOptions.length - 1], isoOptions[i + 1 - shutterSpeedOptions.length]];
             }
@@ -502,16 +509,20 @@ function getShutterSpeedOptions() {
         var shutterSpeedOptions = [];
 
         if (!devMode) {
-            const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
+            const ls = spawn('gphoto2', ['--get-config=shutterspeed']);
 
             ls.stdout.on('data', (data) => {
                 var lines = data.toString().split('\n');
                 for (var i = 0; i < lines.length; i++) {
                     if (lines[i].startsWith('Choice:')) {
                         var shutterspeed = lines[i].split(' ')[2];
-                        if (shutterspeed == '5') break;
+                        //if (shutterspeed == '5') break;
                         if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(shutterspeed);
                     }
+                }
+                if(shutterSpeedOptions[0] == 30){
+                    var inverted = shutterSpeedOptions.reverse();
+                    shutterSpeedOptions = inverted;
                 }
                 resolve(shutterSpeedOptions);
             });
@@ -534,9 +545,9 @@ function getIsoOptions() {
             ls.stdout.on('data', (data) => {
                 var lines = data.toString().split('\n');
                 for (var i = 0; i < lines.length; i++) {
-                    if (lines[i].startsWith('Choice:')) {
+                    if (lines[i].startsWith('Choice:') && !lines[i].endsWith('Reduction')) {
                         var iso = lines[i].split(' ')[2];
-                        if (iso != 'Time' && iso != 'Bulb') isoOptions.push(iso);
+                        if (iso != 'Time' && iso != 'Bulb' && iso != 'Auto' && iso >= 50) isoOptions.push(iso);
                     }
                 }
                 resolve(isoOptions);

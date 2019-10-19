@@ -19,7 +19,16 @@ const theme = createMuiTheme({
 });
 
 function App() {
-  const socket = io("http://192.168.4.95:8000");
+  var date = new Date();
+  const socket = io("http://localhost:8000");
+  socket.emit('time', {
+    day: date.getDate(),
+    month: date.getMonth(),
+    year: date.getFullYear(),
+    hour: date.getHours(),
+    minutes: date.getMinutes(),
+    seconds: date.getSeconds()
+  })
   return (
     <div className="App">
       <SocketContext.Provider value={socket}>
