@@ -20,6 +20,7 @@ function Main(props) {
         console.log('panorama running');
         break;
       case null:
+          if(window.location.pathname == '/') props.socket.emit('softResetPlaner');
         console.log('nothing running');
         break;
       default:

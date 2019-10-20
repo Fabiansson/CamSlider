@@ -14,11 +14,6 @@ class Menu extends React.Component {
         };
     }
 
-    componentDidMount(){
-        this.props.socket.emit('softResetPlaner');
-        
-    }
-
     render(){
 
         const buttonStyle = {
