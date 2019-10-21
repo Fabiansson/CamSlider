@@ -44,76 +44,6 @@ function initSocket(socket) {
 }
 
 var CONFIGS = undefined;
-/*= [
-    ["1/8000", '100'],
-    ["1/6400", '100'],
-    ["1/5000", '100'],
-    ["1/4000", '100'],
-    ["1/3200", '100'],
-    ["1/2500", '100'],
-    ["1/2000", '100'],
-    ["1/1600", '100'],
-    ["1/1250", '100'],
-    ["1/1000", '100'],
-    ["1/800", '100'],
-    ["1/640", '100'],
-    ["1/500", '100'],
-    ["1/400", '100'],
-    ["1/320", '100'],
-    ["1/250", '100'],
-    ["1/200", '100'],
-    ["1/160", '100'],
-    ["1/125", '100'],
-    ["1/100", '100'],
-    ["1/80", '100'],
-    ["1/60", '100'],
-    ["1/50", '100'],
-    ["1/40", '100'],
-    ["1/30", '100'],
-    ["1/25", '100'],
-    ["1/20", '100'],
-    ["1/15", '100'],
-    ["1/13", '100'],
-    ["1/10", '100'],
-    ["1/8", '100'],
-    ["1/6", '100'],
-    ["1/5", '100'],
-    ["1/4", '100'],
-    ["1/3", '100'],
-    ["4/10", '100'],
-    ["5/10", '100'],
-    ["6/10", '100'],
-    ["8/10", '100'],
-    ["10/10", '100'],
-    ["13/10", '100'],
-    ["16/10", '100'],
-    ["20/10", '100'],
-    ["25/10", '100'],
-    ["32/10", '100'],
-    ["40/10", '100'],
-    ["40/10", '125'],
-    ["40/10", '160'],
-    ["40/10", '200'],
-    ["40/10", '250'],
-    ["40/10", '320'],
-    ["40/10", '400'],
-    ["40/10", '500'],
-    ["40/10", '640'],
-    ["40/10", '800'],
-    ["40/10", '1000'],
-    ["40/10", '1250'],
-    ["40/10", '1600'],
-    ["40/10", '2000'],
-    ["40/10", '2500'],
-    ["40/10", '3200'],
-    ["40/10", '4000'],
-    ["40/10", '5000'],
-    ["40/10", '6400'],
-    ["40/10", '8000'],
-    ["40/10", '10000'],
-    ["40/10", '12800'],
-    ["40/10", '16000']
-];*/
 
 killProcess()
     .then(resetCamera()
@@ -125,9 +55,6 @@ killProcess()
     .catch(er => {
         console.log(er.message);
     });
-
-
-
 
 
 usb.on('attach', async function (device) {
@@ -258,34 +185,6 @@ function takeReferencePicture() {
     });
 }
 
-/*function takeReferencePicture() {
-    takePictureAndDownload(false, function (path) {
-        lastImage = path;
-        analyseImage(lastImage, function (result) {
-            currentBrightness = result;
-            reference = result;
-            console.log("Reference IS: " + reference);
-            resetCamera(function (success) {
-                if (success) {
-                    getIso(function (iso) {
-                        getShutterSpeed(function (shutterSpeed) {
-                            for (var i = 0; i < CONFIGS.length; i++) {
-                                if (CONFIGS[i][0] == shutterSpeed && CONFIGS[i][1] == iso) {
-                                    currentStep = i;
-                                    console.log("Current step is: " + currentStep);
-                                    break;
-                                } else {
-                                    currentStep = 21; //magic number
-                                }
-                            }
-                        });
-                    });
-                }
-            });
-        })
-    })
-}*/
-
 async function takePictureWithRamping(analyse) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -325,8 +224,6 @@ async function takePictureWithHdr() {
             var iso = await getIso();
             var step = searchConfig(shutterSpeed, iso);
             if (step != null && (CONFIGS.length > step + 3) && (step - 3 > 0)) {
-                //await setShutterSpeed(CONFIGS[step + 3][0]);
-                //await setIso(CONFIGS[step + 3][1]);
                 await Promise.all([setShutterSpeed(CONFIGS[step + 3][0]), setIso(CONFIGS[step + 3][1])]);
                 await takePicture();
                 await setShutterSpeed(CONFIGS[step - 3][0]);
@@ -344,11 +241,6 @@ async function takePictureWithHdr() {
             reject(new Error('Taking picture with HDR failed'));
         }
     });
-
-
-
-
-
 }
 
 function takePictureAndDownload(keep) {
@@ -373,21 +265,7 @@ function takePictureAndDownload(keep) {
     });
 }
 
-/*function getConfig(callback) {
-    // get configuration tree
-    //setIso(800);
-    camera.getConfig('iso', function (er, settings) {
-        if (er) throw er;
-
-        console.log(settings);
-        callback(settings);
-    });
-}*/
-
 function getShutterSpeed() {
-    /*camera.getConfig('iso', function (er, settings) {
-        console.log(settings.main.capturesettings.shutterspeed2.value);
-    });*/
     return new Promise(function (resolve, reject) {
         if (!devMode) {
             const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
@@ -406,9 +284,6 @@ function getShutterSpeed() {
 }
 
 function getIso() {
-    /*camera.getConfig('iso', function (er, settings) {
-        console.log(settings.main.imgsettings.iso.value);
-    });*/
     return new Promise(function (resolve, reject) {
         if (!devMode) {
             const ls = spawn('gphoto2', ['--get-config=iso']);
@@ -626,22 +501,6 @@ function fill(n, width, z) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-
-
-/* Take picture and download it to filesystem
-camera.takePicture({
-    targetPath: '/tmp/foo.XXXXXX'
-}, function (er, tmpname) {
-    fs.renameSync(tmpname, __dirname + '/picture.jpg');
-});
-
-// Download a picture from camera
-camera.downloadPicture({
-    cameraPath: '/store_00020001/DCIM/100CANON/IMG_1231.JPG',
-    targetPath: '/tmp/foo.XXXXXX'
-}, function (er, tmpname) {
-    fs.renameSync(tmpname, __dirname + '/picture.jpg');
-});*/
 
 module.exports = {
     takePicture,
