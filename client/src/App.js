@@ -20,7 +20,11 @@ const theme = createMuiTheme({
 
 function App() {
   var date = new Date();
-  const socket = io("http://192.168.4.95:8000");
+  var serverIP = "http://192.168.4.95:8000";
+  if(process.env.NODE_ENV == 'development'){
+    serverIP = "http://localhost:8000";
+  }
+  const socket = io(serverIP);
   socket.emit('time', {
     day: date.getDate(),
     month: date.getMonth(),
