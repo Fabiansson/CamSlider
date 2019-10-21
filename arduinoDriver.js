@@ -30,14 +30,9 @@ if (!devMode) {
 }
 
 var direction = 1;
-
 var shouldMove;
-
 var initialized = false;
-
 var atEnd = 1;
-
-
 
 var socket;
 
@@ -124,22 +119,6 @@ if (!devMode) board.on("ready", () => {
     });
 });
 
-
-
-
-
-
-/*function makeStep(pin) {
-    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
-
-    rpio.write(pin, rpio.HIGH);
-    rpio.sleep(0.001);
-
-    rpio.write(pin, rpio.LOW);
-}*/
-
-
-
 async function initTimelapse() {
     return new Promise(async (resolve) => {
         console.log("INIT TIMELAPSE");
@@ -183,35 +162,6 @@ function reposition(axis, dir) {
         console.log(dir + " " + deviceNumber + " " + shouldMove + " " + direction)
 
         if (atEnd != 0 && !devMode) board.accelStepperStep(deviceNumber, direction * 100000);
-
-        /*board.digitalRead(10, async function (value) {
-            if(value == board.LOW){
-                board.reportDigitalPin(10, 0)
-                changeDir();
-                await releaseSwitch();
-            }
-        });
-
-        var endInterval = setInterval(async () => {
-            if (atEnd == 0) {
-                clearInterval(endInterval);
-                clearInterval(stopInterval)
-                changeDir();
-                await releaseSwitch();
-                board.reportDigitalPin(10, 1);
-            }
-        }, 1);
-
-        var stopInterval = setInterval(function () {
-            if (!shouldMove) {
-                clearInterval(stopInterval);
-                clearInterval(endInterval);
-                board.accelStepperStop(deviceNumber);
-                getPos(deviceNumber, function (value) {
-                    console.log(value);
-                });
-            }
-        }, 100);*/
     }
 }
 
@@ -250,58 +200,9 @@ function driveToStart() {
         if (!devMode) {
             board.accelStepperStep(0, direction * 100000);
             resolve();
-
-            /*var end = setInterval(async () => {
-                if (atEnd == 0) {
-                    clearInterval(end);
-                    changeDir();
-                    await releaseSwitch();
-                    board.accelStepperZero(0);
-                    resolve();
-                }
-            }, 100);*/
-            /*board.digitalRead(10, async function (value) {
-                if(value == board.LOW){
-                board.reportDigitalPin(10, 0)
-                atEnd = 0;
-                changeDir();
-                await releaseSwitch();
-                board.reportDigitalPin(10, 1);
-                board.accelStepperZero(0);
-                atEnd = 1;
-                resolve()
-                }
-            });*/
         } else resolve();
-
-        /*board.digitalRead(10, async function (value) {
-            console.log(value);
-            if(value == board.LOW){
-                //board.reportDigitalPin(10, 0)
-                changeDir();
-                await releaseSwitch();
-                board.accelStepperZero(0);
-                resolve();
-            }
-        });*/
     });
 }
-
-/*function driveToEnd() {
-    return new Promise(async (resolve) => {
-        setDirRight();
-        board.accelStepperStep(0, direction * 100000)
-        while (true) {
-            if (!checkButton()) {
-                board.accelStepperStop(0);
-                break;
-            }
-        }
-        setDirLeft();
-        await releaseSwitch();
-        resolve();
-    });
-}*/
 
 async function driveToPosition(position) {
     return new Promise(async (resolve) => {
@@ -367,15 +268,7 @@ function changeDir() {
     direction = direction * -1;
 }
 
-/*function checkButton(pin) {
-    rpio.open(pin, rpio.INPUT);
-    return rpio.read(pin) ? true : false;
-}*/
-
 module.exports = {
-    /*spin,
-    stop,
-    turnOnce,*/
     initSocket,
     releaseSwitch,
     setDirRight,
