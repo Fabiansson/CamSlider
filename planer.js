@@ -8,6 +8,19 @@ var pause = false;
 var busy = false;
 var abort = false;
 
+var timelapseWaypoints;
+
+var currentPanoConfig = [
+    [1, 90],
+    [7, 33],
+    [7, -32],
+    [1, -90]
+];
+var panoInterval;
+var panoCamControl;
+var panoHdr;
+var panoIndex = 0;
+
 
 var socket;
 
@@ -20,14 +33,17 @@ function initSocket(socket){
         })
     })
 
+    //submit positions for timelapse
     socket.on('points', function(data){
         positions = data.points
     })
 
+    //pause for panorama
     socket.on('pause', function () {
         pause = true;
     })
     
+    //resume for panorama
     socket.on('resume', function () {
         if(!busy){
             pause = false;
@@ -52,12 +68,14 @@ function initSocket(socket){
         }
     })
     
+    //abort for timelapse and panorama
     socket.on('abort', async function () {
         abort = true;
         running = null;
     })
     
     socket.on('panoramaInfo', function(){
+        console.log(currentPanoConfig);
         socket.emit('panoramaInfoResponse', {
             config: currentPanoConfig
         })
@@ -70,7 +88,7 @@ function initSocket(socket){
     })
 
     socket.on('timelapse', function (data) {
-        console.log("Starting Plan");
+        console.log("Starting Timelapse Plan");
         console.log(data.interval + " " + data.movieTime + " " + data.cameraControl + " " + data.ramping);
         timelapse(data.interval, data.movieTime, data.cameraControl, data.ramping);
     })
@@ -91,22 +109,6 @@ function initSocket(socket){
         softReset();
     })
 }
-
-
-
-
-var timelapseWaypoints;
-
-var currentPanoConfig = [
-    [1, 90],
-    [7, 33],
-    [7, -32],
-    [1, -90]
-];
-var panoInterval;
-var panoCamControl;
-var panoHdr;
-var panoIndex = 0;
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
