@@ -75,7 +75,6 @@ function initSocket(socket){
     })
     
     socket.on('panoramaInfo', function(){
-        console.log(currentPanoConfig);
         socket.emit('panoramaInfoResponse', {
             config: currentPanoConfig
         })
