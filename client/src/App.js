@@ -20,7 +20,7 @@ const theme = createMuiTheme({
 
 function App() {
   var date = new Date();
-  const socket = io("http://192.168.4.95:8000");
+  const socket = io("http://localhost:8000");
   socket.emit('time', {
     day: date.getDate(),
     month: date.getMonth(),

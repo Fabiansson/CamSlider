@@ -1,4 +1,4 @@
-var devMode = false;
+var devMode = true;
 const Firmata = require("firmata");
 var board;
 if (!devMode) {

@@ -1,4 +1,4 @@
-var devMode = false;
+var devMode = true;
 const {
     spawn
 } = require('child_process');
