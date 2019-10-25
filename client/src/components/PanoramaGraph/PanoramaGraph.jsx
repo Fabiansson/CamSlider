@@ -2,6 +2,8 @@ import React from 'react';
 import {
     PieChart, Pie, Cell,
 } from 'recharts';
+import Button from '@material-ui/core/Button';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
 import SocketContext from '../../services/SocketProvider';
 
 class PanoramaGraph extends React.Component {
@@ -63,17 +65,22 @@ class PanoramaGraph extends React.Component {
     }
 
     generateFields() {
-        var fields = [];
+        var rows = [];
+
         console.log(this.state.config);
         if(this.state.config){
         this.state.config.forEach(function (waypoint) {
+            var fields = [];
             for(var i = 0; i < waypoint[0]; i++){
-                fields.push(<p>{waypoint[1]}</p>)
+                fields.push(<Button variant="contained">
+                {waypoint[1]}
+              </Button>)
             }
+            rows.push(<div style={{overflowX: "scroll"}}><ButtonGroup  size="small" outlined button group>{fields}</ButtonGroup></div>);
 
         });
     }
-    return fields;
+    return rows;
     }
 
     retake(photo, totalInRow){
