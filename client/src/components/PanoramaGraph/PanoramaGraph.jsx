@@ -13,8 +13,7 @@ class PanoramaGraph extends React.Component {
 
         this.state = {
             data: [],
-            progress: 0,
-            progressState: [],
+            progress: []
         };
     }
 
@@ -26,7 +25,7 @@ class PanoramaGraph extends React.Component {
             console.log(this.state.config);
 
             var array = []
-        var progressArray = []
+        var progress = []
         var count = 0;
         this.state.config.forEach(function (waypoint) {
             //console.log(waypoint);
@@ -36,22 +35,18 @@ class PanoramaGraph extends React.Component {
                 count++;
                 console.log(o);
                 row.push(o);
-                progressArray.push(false);
+                progress.push(0);
             }
             array.push(row);
         });
 
-        progressArray[0] = true;
-
         this.setState({ data: array });
-        this.setState({progressState: progressArray})
+        this.setState({progress: progress})
 
 
         this.props.socket.on('progress', data => {
-            var newProgressArray = this.state.progressState;
-            newProgressArray[data.value] = true;
             this.setState({
-                progressState: newProgressArray
+                progress: data.progress
             })
         })
         })
@@ -79,7 +74,7 @@ class PanoramaGraph extends React.Component {
     return rows;
     }
 
-    retake(photo, totalInRow){
+    /*retake(photo, totalInRow){
         var angle = photo[1];
         var index = photo[0];
         console.log(angle + " " + index + " " + totalInRow);
@@ -88,6 +83,12 @@ class PanoramaGraph extends React.Component {
             index: index,
             totalInRow: totalInRow
         })
+    }*/
+
+    retake(index) {
+        this.props.socket.emit('retakePanoPicture', {
+            index: index
+        });
     }
 
     generatePies() {
@@ -111,7 +112,7 @@ class PanoramaGraph extends React.Component {
             let image = [pieData[j].innerIndex, pieData[j].angle];
             console.log(image);
             let rowLength = pieData.length;
-            cells.push(<Cell key={imageIndex} onClick={() => this.retake(image, rowLength)} fill={this.state.progressState[imageIndex] ? '#00C49F' : '#FF8042'}/>)
+            cells.unshift(<Cell key={imageIndex} onClick={() => /*this.retake(image, rowLength)*/this.retake(imageIndex)} fill={this.state.progress[imageIndex] > 0 ? '#00C49F' : '#FF8042'}/>)
         }
 
         return cells;
