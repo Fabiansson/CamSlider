@@ -10,21 +10,25 @@ class PanoramaGraph extends React.Component {
     constructor(props) {
         super(props);
         this.retake = this.retake.bind(this);
-        this.generateFields = this.generateFields.bind(this);
 
         this.state = {
-            config: undefined,
-            //data: [],
-            //progress: 0,
-            //progressState: [],
+            data: [],
+            progress: 0,
+            progressState: [],
         };
     }
 
-    /*componentDidMount() {
-        var array = []
+    componentDidMount() {
+        this.props.socket.on('panoramaInfoResponse', data => {
+            this.setState({
+                config: data.config
+            })
+            console.log(this.state.config);
+
+            var array = []
         var progressArray = []
         var count = 0;
-        this.props.config.forEach(function (waypoint) {
+        this.state.config.forEach(function (waypoint) {
             //console.log(waypoint);
             var row = []
             for (var i = 0; i < waypoint[0]; i++) {
@@ -50,14 +54,6 @@ class PanoramaGraph extends React.Component {
                 progressState: newProgressArray
             })
         })
-    
-    }*/
-    componentDidMount() {
-        this.props.socket.on('panoramaInfoResponse', data => {
-            this.setState({
-                config: data.config
-            })
-            console.log(this.state.config);
         })
 
         
@@ -125,10 +121,11 @@ class PanoramaGraph extends React.Component {
 
     render() {
 
-        return (<div >
-            {this.generateFields()}
-        </div>
-        );
+        return(<div>
+            <PieChart width={500} height={400}>
+                {this.generatePies()}
+            </PieChart>
+        </div>)
     }
 }
 
