@@ -52,7 +52,6 @@ io.on('connection', function (socket) {
     console.log("Hallo client");
     
     global.socket = socket;
-    //planer.initSocket(socket);
     timelapse.initSocket(socket);
     panorama.initSocket(socket);
     camera.initSocket(socket);
