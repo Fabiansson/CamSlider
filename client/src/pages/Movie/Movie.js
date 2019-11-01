@@ -1,6 +1,5 @@
 import React from 'react';
 import Header from '../../components/Header/Header';
-import {SocketContext} from '../../services/SocketProvider';
 import TimelapseCamControls from '../../components/TimelapseCamControls/TimelapseCamControls';
 import GeneralOptions from '../../components/TimelapseOptions/TimelapseOptions';
 import TimelapsePoints from '../../components/TimelapsePoints/TimelapsePoints';

@@ -3,6 +3,7 @@ import {
     PieChart, Pie, Cell,
 } from 'recharts';
 import SocketContext from '../../services/SocketProvider';
+import { colorDark } from '../../services/util';
 
 class PanoramaGraph extends React.Component {
     constructor(props) {
@@ -20,18 +21,15 @@ class PanoramaGraph extends React.Component {
             this.setState({
                 config: data.config
             })
-            console.log(this.state.config);
 
             var array = []
             var progress = []
             var count = 0;
             this.state.config.forEach(function (waypoint) {
-                //console.log(waypoint);
                 var row = []
                 for (var i = 0; i < waypoint[0]; i++) {
-                    var o = Object.assign({ 'image': count, 'angle': waypoint[1], 'innerIndex': i, 'value': 1 });
+                    var o = Object.assign({ 'image': count, 'value': 1 });
                     count++;
-                    console.log(o);
                     row.push(o);
                     progress.push(0);
                 }
@@ -76,15 +74,14 @@ class PanoramaGraph extends React.Component {
 
         for (var j = 0; j < pieData.length; j++) {
             let imageIndex = pieData[j].image;
-            let image = [pieData[j].innerIndex, pieData[j].angle];
-            console.log(image);
-            cells.unshift(<Cell key={imageIndex} onClick={() => this.retake(imageIndex)} fill={this.state.progress[imageIndex] > 0 ? '#00C49F' : '#FF8042'} />)
+            let newColor = colorDark('#03ff7d', (this.state.progress[imageIndex] - 1)  * -25);
+            let color = this.state.progress[imageIndex] > 0 ? newColor : '#FF8042';
+            
+            cells.unshift(<Cell key={imageIndex} onClick={() => this.retake(imageIndex)} fill={color} />)
         }
 
         return cells;
     }
-
-
 
     render() {
         return (<div>
