@@ -2,8 +2,6 @@ import React from 'react';
 import {
     PieChart, Pie, Cell,
 } from 'recharts';
-import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
 import SocketContext from '../../services/SocketProvider';
 
 class PanoramaGraph extends React.Component {
@@ -51,39 +49,8 @@ class PanoramaGraph extends React.Component {
         })
         })
 
-        
         this.props.socket.emit('panoramaInfo');
     }
-
-    generateFields() {
-        var rows = [];
-
-        console.log(this.state.config);
-        if(this.state.config){
-        this.state.config.forEach(function (waypoint) {
-            var fields = [];
-            for(var i = 0; i < waypoint[0]; i++){
-                fields.push(<Button variant="contained">
-                {waypoint[1]}
-              </Button>)
-            }
-            rows.push(<div style={{overflowX: "scroll"}}><ButtonGroup  size="small" outlined button group>{fields}</ButtonGroup></div>);
-
-        });
-    }
-    return rows;
-    }
-
-    /*retake(photo, totalInRow){
-        var angle = photo[1];
-        var index = photo[0];
-        console.log(angle + " " + index + " " + totalInRow);
-        this.props.socket.emit('retakePanoPicture', {
-            angle: angle,
-            index: index,
-            totalInRow: totalInRow
-        })
-    }*/
 
     retake(index) {
         this.props.socket.emit('retakePanoPicture', {
