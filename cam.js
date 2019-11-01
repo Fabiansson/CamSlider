@@ -1,4 +1,6 @@
 var devMode = false;
+if(process.env.NODE_ENV == 'development') var devMode = true;
+console.log("DevMode is " + devMode);
 const {
     spawn
 } = require('child_process');
