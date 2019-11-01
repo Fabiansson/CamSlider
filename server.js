@@ -26,7 +26,6 @@ process.on('beforeExit', (code) => {
 });
 
 var motorDriver = require('./arduinoDriver');
-//var planer = require('./planer');
 var timelapse = require('./timelapse');
 var panorama = require('./panorama');
 var camera = require('./cam.js');
