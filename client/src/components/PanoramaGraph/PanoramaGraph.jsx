@@ -11,53 +11,51 @@ class PanoramaGraph extends React.Component {
 
         this.state = {
             data: [],
-            progress: 0,
-            progressState: [],
+            progress: []
         };
     }
 
     componentDidMount() {
-        var array = []
-        var progressArray = []
-        var count = 0;
-        this.props.config.forEach(function (waypoint) {
-            //console.log(waypoint);
-            var row = []
-            for (var i = 0; i < waypoint[0]; i++) {
-                var o = Object.assign({ 'image': count, 'angle': waypoint[1], 'innerIndex': i, 'value': 1 });
-                count++;
-                console.log(o);
-                row.push(o);
-                progressArray.push(false);
-            }
-            array.push(row);
-        });
-
-        progressArray[0] = true;
-
-        this.setState({ data: array });
-        this.setState({progressState: progressArray})
-
-
-        this.props.socket.on('progress', data => {
-            var newProgressArray = this.state.progressState;
-            newProgressArray[data.value] = true;
+        this.props.socket.on('panoramaInfoResponse', data => {
             this.setState({
-                progressState: newProgressArray
+                config: data.config
+            })
+            console.log(this.state.config);
+
+            var array = []
+            var progress = []
+            var count = 0;
+            this.state.config.forEach(function (waypoint) {
+                //console.log(waypoint);
+                var row = []
+                for (var i = 0; i < waypoint[0]; i++) {
+                    var o = Object.assign({ 'image': count, 'angle': waypoint[1], 'innerIndex': i, 'value': 1 });
+                    count++;
+                    console.log(o);
+                    row.push(o);
+                    progress.push(0);
+                }
+                array.push(row);
+            });
+
+            this.setState({ data: array });
+            this.setState({ progress: progress })
+
+
+            this.props.socket.on('progress', data => {
+                this.setState({
+                    progress: data.progress
+                })
             })
         })
-    
+
+        this.props.socket.emit('panoramaInfo');
     }
 
-    retake(photo, totalInRow){
-        var angle = photo[1];
-        var index = photo[0];
-        console.log(angle + " " + index + " " + totalInRow);
+    retake(index) {
         this.props.socket.emit('retakePanoPicture', {
-            angle: angle,
-            index: index,
-            totalInRow: totalInRow
-        })
+            index: index
+        });
     }
 
     generatePies() {
@@ -65,23 +63,22 @@ class PanoramaGraph extends React.Component {
 
         for (var i = 0; i < this.state.data.length; i++) {
             var pieData = this.state.data[i];
-            pies.push(<Pie key={i} data={pieData} dataKey="value" cx={155} cy={150} outerRadius={25 * (i + 1)} innerRadius={25 * (i + 1) - 20} paddingAngle={0} fill="#8884d8"> 
-            {   this.generateCells(pieData)
-                //pieData.map((entry, index, arr) => <Cell key={index} onClick={() => this.retake(entry, arr.length)} fill={this.state.progressState[entry] ? '#0088FE' : '#00C49F'}/>)
-            } </Pie>);
+            pies.push(<Pie key={i} data={pieData} dataKey="value" cx={155} cy={150} outerRadius={25 * (i + 1)} innerRadius={25 * (i + 1) - 20} paddingAngle={0} fill="#8884d8">
+                {this.generateCells(pieData)
+                    //pieData.map((entry, index, arr) => <Cell key={index} onClick={() => this.retake(entry, arr.length)} fill={this.state.progressState[entry] ? '#0088FE' : '#00C49F'}/>)
+                } </Pie>);
         }
         return pies;
     }
 
-    generateCells(pieData){
+    generateCells(pieData) {
         var cells = []
 
-        for(var j = 0; j < pieData.length; j++){
+        for (var j = 0; j < pieData.length; j++) {
             let imageIndex = pieData[j].image;
             let image = [pieData[j].innerIndex, pieData[j].angle];
             console.log(image);
-            let rowLength = pieData.length;
-            cells.push(<Cell key={imageIndex} onClick={() => this.retake(image, rowLength)} fill={this.state.progressState[imageIndex] ? '#00C49F' : '#FF8042'}/>)
+            cells.unshift(<Cell key={imageIndex} onClick={() => this.retake(imageIndex)} fill={this.state.progress[imageIndex] > 0 ? '#00C49F' : '#FF8042'} />)
         }
 
         return cells;
@@ -90,20 +87,17 @@ class PanoramaGraph extends React.Component {
 
 
     render() {
-
-        return (<div >
+        return (<div>
             <PieChart width={500} height={400}>
-        {this.generatePies()}
-        
+                {this.generatePies()}
             </PieChart>
-        </div>
-        );
+        </div>)
     }
 }
 
 const PanoramaGraphWithSocker = (props) => (
     <SocketContext.Consumer>
-      {socket => <PanoramaGraph {...props} socket={socket} />}
+        {socket => <PanoramaGraph {...props} socket={socket} />}
     </SocketContext.Consumer>
 )
 

@@ -26,7 +26,8 @@ process.on('beforeExit', (code) => {
 });
 
 var motorDriver = require('./arduinoDriver');
-var planer = require('./planer');
+var timelapse = require('./timelapse');
+var panorama = require('./panorama');
 var camera = require('./cam.js');
 
 
@@ -51,7 +52,8 @@ io.on('connection', function (socket) {
     console.log("Hallo client");
     
     global.socket = socket;
-    planer.initSocket(socket);
+    timelapse.initSocket(socket);
+    panorama.initSocket(socket);
     camera.initSocket(socket);
     motorDriver.initSocket(socket);
 

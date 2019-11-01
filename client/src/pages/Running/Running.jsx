@@ -13,9 +13,7 @@ class Running extends React.Component {
         this.abort = this.abort.bind(this);
         
         this.state = {
-            maxProgress: 100,
             waypoints: undefined,
-            amountPauses: 0,
             panoConfig: undefined,
             pause: false
         };
@@ -23,13 +21,6 @@ class Running extends React.Component {
 
 
     componentDidMount() {
-        this.props.socket.on('progress', data => {
-            this.setState({
-                progress: data.value,
-                maxProgress: data.max
-            })
-        })
-        
         this.props.socket.on('timelapseInfoResponse', data => {
             console.log("hey");
             this.setState({
@@ -56,7 +47,6 @@ class Running extends React.Component {
     }
 
     componentWillUnmount(){
-        this.props.socket.removeAllListeners('progress');
         this.props.socket.removeAllListeners('timelapseInfoResponse');
         this.props.socket.removeAllListeners('panoramaInfoResponse');
         this.props.socket.removeAllListeners('isBusy');
