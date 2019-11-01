@@ -17,7 +17,6 @@ class PanoramaGraph extends React.Component {
     }
 
     componentDidMount() {
-        console.log(this.props.config);
         var array = []
         var progressArray = []
         var count = 0;
