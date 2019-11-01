@@ -79,6 +79,7 @@ class PanoramaGraph extends React.Component {
         for(var j = 0; j < pieData.length; j++){
             let imageIndex = pieData[j].image;
             let image = [pieData[j].innerIndex, pieData[j].angle];
+            console.log(image);
             let rowLength = pieData.length;
             cells.push(<Cell key={imageIndex} onClick={() => this.retake(image, rowLength)} fill={this.state.progressState[imageIndex] ? '#00C49F' : '#FF8042'}/>)
         }
