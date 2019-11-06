@@ -12,15 +12,15 @@ function Main(props) {
   props.socket.on('status', function(data) {
     switch(data.running){
       case 'timelapse':
-        if(window.location.pathname != '/runningTimelapse') window.location.href = '/runningTimelapse';
+        if(window.location.pathname !== '/runningTimelapse') window.location.href = '/runningTimelapse';
         console.log('timelapse running');
         break;
       case 'panorama':
-          if(window.location.pathname != '/runningPanorama') window.location.href = '/runningPanorama';
+          if(window.location.pathname !== '/runningPanorama') window.location.href = '/runningPanorama';
         console.log('panorama running');
         break;
       case null:
-          if(window.location.pathname == '/') props.socket.emit('softResetPlaner');
+          if(window.location.pathname === '/') props.socket.emit('softResetPlaner');
         console.log('nothing running');
         break;
       default:

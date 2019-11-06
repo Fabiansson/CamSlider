@@ -21,7 +21,7 @@ const theme = createMuiTheme({
 function App() {
   var date = new Date();
   var serverIP = "http://192.168.4.95:8000";
-  if(process.env.NODE_ENV == 'development'){
+  if(process.env.NODE_ENV === 'development'){
     serverIP = "http://localhost:8000";
   }
   const socket = io(serverIP);
