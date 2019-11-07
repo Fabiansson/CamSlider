@@ -51,6 +51,8 @@ class Menu extends React.Component {
             <Button variant="outlined" onClick={() => this.props.socket.emit('update')} >
                 Update
             </Button>
+            <h5>Env: {process.env.NODE_ENV}</h5>
+            <h5>{process.env.REACT_APP_VERSION}</h5>
             </div>
         );
     }

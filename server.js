@@ -36,6 +36,8 @@ var port = process.env.PORT || 8000; //WARNING: app.listen(80) will NOT work her
 
 server.listen(port, host, function () {
     console.log("Server running on: " + host + " : " + port);
+    console.log('ENV: ' + process.env.NODE_ENV);
+    console.log('VERSION: ' + process.env.REACT_APP_VERSION);
 });
 
 //Serving directory
