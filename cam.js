@@ -1,6 +1,5 @@
 var devMode = false;
 if(process.env.NODE_ENV == 'development') var devMode = true;
-console.log("DevMode is " + devMode);
 const {
     spawn
 } = require('child_process');
@@ -135,7 +134,7 @@ function resetCamera() {
                         resolve(true);
                     });
                 })
-            } else resolve(true);
+            } else resolve(false);
         } catch (er) {
             console.log(er.message);
             reject(new Error("No camera conected"));
