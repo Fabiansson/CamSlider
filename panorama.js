@@ -73,9 +73,7 @@ function initSocket(socket) {
     //for panorama
     socket.on('panorama', function (data) {
         console.log("Starting Pano Plan");
-        currentPanoConfig = data.config.sort(function (a, b) {
-            return b[1] - a[1];
-        });
+        currentPanoConfig = data.config;
         waypoints = generatePanoPoints(data.config);
         progress = Array(waypoints.length).fill(0);
 
