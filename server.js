@@ -72,7 +72,7 @@ io.on('connection', function (socket) {
     }
 
     socket.on('update', function () {
-        console.log('Starting Update process...');
+        console.log('Starting Update...');
         console.log('Downloading new Software.');
         exec(commands.gitPull, function (error, stdout, stderr) {
             console.log('Installing Server Files.');
