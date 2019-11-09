@@ -216,7 +216,11 @@ async function driveToPosition(position) {
             var z_position = position[1];
         }
 
-        if(!devMode) board.accelStepperAcceleration(0, 1000);
+        if(!devMode) {
+            board.accelStepperAcceleration(0, 1000);
+            board.accelStepperAcceleration(1, 1000);
+            board.accelStepperAcceleration(2, 1000);
+        }
         if (positionLength == 3) var xMove = stepTo(0, x_position);
         var yMove = stepTo(1, y_position)
         var zMove = stepTo(2, z_position)
