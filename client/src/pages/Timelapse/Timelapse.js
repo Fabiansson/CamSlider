@@ -36,7 +36,7 @@ class Timelapse extends React.Component {
             pointsOk: false,
             interval: 10,
             recordingTime: 6000,
-            movieTime: 12
+            movieTime: 24
         };
 
         
