@@ -59,7 +59,7 @@ io.on('connection', function (socket) {
     camera.initSocket(socket);
     motorDriver.initSocket(socket);
 
-    if (process.env.NODE_ENV == 'production') {
+    if (process.env.NODE_ENV != 'development') {
         socket.on('time', function (data) {
             const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAI', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEZ'];
             var setTimeCommand = 'date -s "' + data.day + " " + months[data.month] + " " + data.year + " " + data.hour + ":" + data.minutes + ":" + data.seconds + '"';

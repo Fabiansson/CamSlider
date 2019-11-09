@@ -38,7 +38,6 @@ class TimelapseOptions extends React.Component {
   }
 
   toDateTime(secs) {
-    console.log("lklkl");
     var t = new Date(1970, 0, 1); // Epoch
     t.setSeconds(secs);
     return t;
