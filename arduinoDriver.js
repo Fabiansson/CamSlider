@@ -68,7 +68,7 @@ function initSocket(socket) {
 
     socket.on('init', async function () {
         if (!initialized) await initTimelapse();
-        initialized = true;
+        //initialized = true;
         socket.emit('initDone');
     })
 
