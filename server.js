@@ -6,7 +6,7 @@ var io = require('socket.io')(server);
 var exec = require('child_process').exec;
 const process = require('process');
 var path = require('path');
-const updateCommand = require('./config').updateCommand;
+const commands = require('./config');
 
 process.on('beforeExit', (code) => {
     console.log('Process beforeExit event with code: ', code);
@@ -72,11 +72,21 @@ io.on('connection', function (socket) {
     }
 
     socket.on('update', function () {
-        console.log('Updating.');
-        exec(updateCommand, function (error, stdout, stderr) {
-            console.log('Updating done... restarting now...');
-            socket.emit('updateDone');
-            exec('reboot', function (error, stdout, stderr) { console.log(stdout); });
+        console.log('Starting Update process...');
+        console.log('Downloading new Software.');
+        exec(commands.gitPull, function (error, stdout, stderr) {
+            console.log('Installing Server Files.');
+            exec(commands.serverInstall, function (error, stdout, stderr) {
+                console.log('Installing Client Files.');
+                exec(commands.clientInstall, function (error, stdout, stderr) {
+                    console.log('Building Client.');
+                    exec(commands.clientBuild, function (error, stdout, stderr) {
+                        console.log('Updating done... restarting now...');
+                        socket.emit('updateDone');
+                        exec('reboot', function (error, stdout, stderr) { console.log(stdout); });
+                    })
+                })
+            })
         });
     })
 
