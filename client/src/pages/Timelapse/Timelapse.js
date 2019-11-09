@@ -53,9 +53,7 @@ class Timelapse extends React.Component {
 
         this.props.socket.on('hasCamera', data => {
             this.setState({
-                cameraActive: data.hasCamera
-            })
-            this.setState({
+                cameraActive: data.hasCamera,
                 hasCamera: data.hasCamera
             })
         });
@@ -101,49 +99,37 @@ class Timelapse extends React.Component {
         if (disabled === 'interval' && type === 'recordingTime') {
             dynamicValue = (value / this.state.interval) / 25
             this.setState({
-                recordingTime: value
-            })
-            this.setState({
+                recordingTime: value,
                 movieTime: dynamicValue
             })
         } else if (disabled === 'interval' && type === 'movieTime') {
             dynamicValue = (value * 25) * this.state.interval;
             this.setState({
-                movieTime: value
-            })
-            this.setState({
+                movieTime: value,
                 recordingTime: dynamicValue
             })
         } else if (disabled === 'recordingTime' && type === 'interval') {
             dynamicValue = (this.state.recordingTime / value) / 25;
             this.setState({
-                interval: value
-            })
-            this.setState({
+                interval: value,
                 movieTime: dynamicValue
             })
         } else if (disabled === 'recordingTime' && type === 'movieTime') {
             dynamicValue = this.state.recordingTime / (value * 25);
             this.setState({
-                movieTime: value
-            })
-            this.setState({
+                movieTime: value,
                 interval: dynamicValue
             })
         } else if (disabled === 'movieTime' && type === 'interval') {
             dynamicValue = this.state.movieTime * value * 25;
             this.setState({
-                interval: value
-            })
-            this.setState({
+                interval: value,
                 recordingTime: dynamicValue
             })
         } else if (disabled === 'movieTime' && type === 'recordingTime') {
             dynamicValue = value / (this.state.movieTime * 25)
             this.setState({
-                recordingTime: value
-            })
-            this.setState({
+                recordingTime: value,
                 interval: dynamicValue
             })
         }

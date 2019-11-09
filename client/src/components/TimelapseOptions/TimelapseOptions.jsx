@@ -19,7 +19,7 @@ class TimelapseOptions extends React.Component {
     this.handleMovieTimeChange = this.handleMovieTimeChange.bind(this);
     this.handleDisableChange = this.handleDisableChange.bind(this);
     this.state = {
-      disabled: 'interval'
+      disabled: 'movieTime'
     };
   }
 
