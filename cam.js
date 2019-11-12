@@ -32,6 +32,17 @@ function initSocket(socket) {
         })
     })
 
+    socket.on('getCameraOptions', function() {
+        socket.emit('cameraOptions', {
+            shutterSpeedOptions: shutterSpeedOptions,
+            isoOptions: isoOptions 
+        })
+    })
+
+    socket.on('generateRampingConfig', function(data) {
+        generateRampingConfig(data.minIso, data.maxIso, data.minShutterSpeed, data.maxShutterSpeed);
+    })
+
     socket.on('takeReferencePicture', async () => {
         console.log("Take Reference Picture");
         try {
@@ -44,6 +55,8 @@ function initSocket(socket) {
 
 }
 
+var shutterSpeedOptions = [4,1,0.5,0.1,0.05];
+var isoOptions = [100,200,400,600,800,1000];
 var CONFIGS = undefined;
 
 killProcess()
@@ -358,12 +371,16 @@ function searchConfig(shutterSpeed, iso) {
     return step;
 }
 
+function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
+
+}
+
 function getCameraOptions() {
     return new Promise(async function (resolve, reject) {
-        var shutterSpeedOptions = await getShutterSpeedOptions();
-        var isoOptions = await getIsoOptions();
+        shutterSpeedOptions = await getShutterSpeedOptions();
+        isoOptions = await getIsoOptions();
 
-        var options = []
+        /*var options = []
 
         for (var i = 0; i < (shutterSpeedOptions.length + isoOptions.length); i++) {
             var option;
@@ -376,7 +393,7 @@ function getCameraOptions() {
             options.push(option);
         }
         CONFIGS = options;
-        console.log('Camera Options: ' + CONFIGS);
+        console.log('Camera Options: ' + CONFIGS);*/
     });
 }
 
