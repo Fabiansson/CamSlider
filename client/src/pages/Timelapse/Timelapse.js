@@ -167,7 +167,7 @@ class Timelapse extends React.Component {
                 }
                 backButton={true}
             /> {
-                this.state.cameraActive &&
+                !this.state.cameraActive &&
                 <TimelapseCamControls brightnessControl={
                         this.state.brightnessControl
                     }

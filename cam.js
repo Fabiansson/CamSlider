@@ -57,7 +57,7 @@ function initSocket(socket) {
 
 var shutterSpeedOptions = [4,1,0.5,0.1,0.05];
 var isoOptions = [100,200,400,600,800,1000];
-var CONFIGS = undefined;
+var CONFIGS = [];
 
 killProcess()
     .then(resetCamera()
@@ -81,7 +81,7 @@ usb.on('attach', async function (device) {
             console.log(list);
             if (list.length === 0) return;
             camera = list[0];
-            if (CONFIGS == undefined) {
+            if (CONFIGS.length === 0) {
                 spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
                 getCameraOptions();
             }
@@ -140,7 +140,7 @@ function resetCamera() {
                         camera = list[0];
                         console.log('Found', camera.model);
             
-                        if (CONFIGS == undefined) {
+                        if (CONFIGS.length === 0) {
                             spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
                             getCameraOptions();
                         }
@@ -372,7 +372,11 @@ function searchConfig(shutterSpeed, iso) {
 }
 
 function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
-
+    console.log('minIso: ' + minIso);
+    console.log('maxIso: ' + maxIso);
+    console.log('minShutterSpeed: ' + minShutterSpeed);
+    console.log('maxShutterSpeed: ' + maxShutterSpeed);
+    // TODO: CONFIGS aufgrund der Werte zusammenstellen
 }
 
 function getCameraOptions() {

@@ -9,11 +9,12 @@ import InputLabel from '@material-ui/core/InputLabel';
 
 
 
-
 class TimelapseCamControls extends React.Component {
     constructor(props) {
         super(props);
         this.toggleBrightnesscontrol = this.toggleBrightnesscontrol.bind(this);
+        this.createShutterSpeedOptions = this.createShutterSpeedOptions.bind(this);
+        this.createIsoOptions = this.createIsoOptions.bind(this);
         this.takeReferencePicture = this.takeReferencePicture.bind(this);
         this.genereateRampingConfig = this.genereateRampingConfig.bind(this);
         this.state = {
@@ -29,12 +30,16 @@ class TimelapseCamControls extends React.Component {
         };
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.props.socket.on('cameraOptions', (data) => {
             this.setState({
                 shutterSpeedOptions: data.shutterSpeedOptions,
-                isoOptions: data.isoOptions
-            }, function(){
+                minShutterSpeed: data.shutterSpeedOptions[0],
+                maxShutterSpeed: data.shutterSpeedOptions[data.shutterSpeedOptions.length - 1],
+                isoOptions: data.isoOptions,
+                minIso: data.isoOptions[0],
+                maxIso: data.isoOptions[data.isoOptions.length - 1]
+            }, function () {
                 console.log(this.state.shutterSpeedOptions);
                 console.log(this.state.isoOptions);
             })
@@ -47,6 +52,27 @@ class TimelapseCamControls extends React.Component {
         this.props.toggleBrightnesscontrol();
     }
 
+    createShutterSpeedOptions() {
+        var shutterSpeedOptions = [];
+
+        this.state.shutterSpeedOptions.forEach((option) => shutterSpeedOptions.push(
+            <option key={option} value={option}>{option}</option>
+        ))
+
+        return shutterSpeedOptions;
+    }
+
+    createIsoOptions() {
+        var isoOptions = [];
+
+        this.state.isoOptions.forEach((option) => isoOptions.push(
+            <option key={option} value={option}>{option}</option>
+        ))
+
+        return isoOptions;
+    }
+
+
     takeReferencePicture() {
         this.props.socket.emit('takeReferencePicture');
         this.setState({ loading: true });
@@ -56,7 +82,7 @@ class TimelapseCamControls extends React.Component {
         })*/
         this.setState({ loading: false });
         this.setState({ referencePicture: true });
-        this.props.camControlsOk(true);
+        if(this.state.rampingConfig) this.props.camControlsOk(true);
     }
 
     genereateRampingConfig() {
@@ -67,6 +93,7 @@ class TimelapseCamControls extends React.Component {
             maxShutterSpeed: this.state.maxShutterSpeed
         });
         this.setState({ rampingConfig: true });
+        if(this.state.referencePicture) this.props.camControlsOk(true);
     }
 
     render() {
@@ -84,10 +111,66 @@ class TimelapseCamControls extends React.Component {
                     </Button>
                 }
                 {this.props.brightnessControl && !this.state.rampingConfig &&
-                <div>
-                    
-                    <Button variant="contained" onClick={this.genereateRampingConfig}>
-                        Generate Ramping-Config
+                    <div>
+                        <FormControl >
+                            <InputLabel htmlFor="age-native-simple">Min. Shutter-Speed</InputLabel>
+                            <Select
+                                native
+                                value={this.state.minShutterSpeed}
+                                onChange={(event) => this.setState({ minShutterSpeed: event.target.value })}
+                                inputProps={{
+                                    name: 'Min. Shutter-Speed',
+                                    id: 'age-native-simple',
+                                }}
+                            >
+                                {this.createShutterSpeedOptions()}
+                            </Select>
+                        </FormControl>
+                        <FormControl >
+                            <InputLabel htmlFor="age-native-simple">Max. Shutter-Speed</InputLabel>
+                            <Select
+                                native
+                                value={this.state.maxShutterSpeed}
+                                onChange={(event) => this.setState({ maxShutterSpeed: event.target.value })}
+                                inputProps={{
+                                    name: 'Max. Shutter-Speed',
+                                    id: 'age-native-simple',
+                                }}
+                            >
+                                {this.createShutterSpeedOptions()}
+                            </Select>
+                        </FormControl>
+                        <FormControl >
+                            <InputLabel htmlFor="age-native-simple">Min. ISO</InputLabel>
+                            <Select
+                                native
+                                value={this.state.minIso}
+                                onChange={(event) => this.setState({ minIso: event.target.value })}
+                                inputProps={{
+                                    name: 'Min. ISO',
+                                    id: 'age-native-simple',
+                                }}
+                            >
+                                {this.createIsoOptions()}
+                            </Select>
+                        </FormControl>
+                        <FormControl >
+                            <InputLabel htmlFor="age-native-simple">Max. ISO</InputLabel>
+                            <Select
+                                native
+                                value={this.state.maxIso}
+                                onChange={(event) => this.setState({ maxIso: event.target.value })}
+                                inputProps={{
+                                    name: 'Max. ISO',
+                                    id: 'age-native-simple',
+                                }}
+                            >
+                                {this.createIsoOptions()}
+                            </Select>
+                        </FormControl>
+
+                        <Button variant="contained" onClick={this.genereateRampingConfig}>
+                            Generate Ramping-Config
                     </Button>
                     </div>
                 }
