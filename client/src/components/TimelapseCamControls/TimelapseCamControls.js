@@ -7,6 +7,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import { withSnackbar } from 'notistack';
+import { Typography } from '@material-ui/core';
 
 
 class TimelapseCamControls extends React.Component {
@@ -31,6 +32,16 @@ class TimelapseCamControls extends React.Component {
     }
 
     componentDidMount() {
+        this.props.socket.on('analysingDone', data => {
+            this.setState({ loading: false });
+            this.setState({ referencePicture: data.success });
+            if (data.success && this.state.rampingConfig) {
+                this.props.camControlsOk(true);
+            } else if (!data.success) {
+                this.props.enqueueSnackbar('Taking Reference Pictrue failed.');
+            }
+        })
+
         this.props.socket.on('cameraOptions', (data) => {
             this.setState({
                 shutterSpeedOptions: data.shutterSpeedOptions,
@@ -73,13 +84,6 @@ class TimelapseCamControls extends React.Component {
     takeReferencePicture() {
         this.props.socket.emit('takeReferencePicture');
         this.setState({ loading: true });
-        /*this.props.socket.on('analysingDone', data => {
-            this.setState({ loading: false });
-            this.setState({ referencePicture: data.success });
-        })*/
-        this.setState({ loading: false });
-        this.setState({ referencePicture: true });
-        if (this.state.rampingConfig) this.props.camControlsOk(true);
     }
 
     genereateRampingConfig() {
@@ -100,9 +104,12 @@ class TimelapseCamControls extends React.Component {
 
     render() {
         const selectStyle = {
-            minWidth: 150,
+            minWidth: 140,
+            margin: '0.5em'
+        };
+        const infoStyle = {
             margin: '1em'
-          };
+        }
         return (
             <div>
                 <FormControlLabel
@@ -180,6 +187,7 @@ class TimelapseCamControls extends React.Component {
                             </Select>
                         </FormControl>
                         </div>
+                        <Typography style={infoStyle} variant="subtitle2">Note that your max Shutter-Speed has to be at least 2s smaller than your desired interval because of image saving and processing.</Typography>
                         <Button variant="contained" onClick={this.genereateRampingConfig}>
                             Generate Ramping-Config
                     </Button>
