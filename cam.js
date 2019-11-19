@@ -1,5 +1,5 @@
 var devMode = false;
-if(process.env.NODE_ENV == 'development') var devMode = true;
+if (process.env.NODE_ENV == 'development') var devMode = true;
 const {
     spawn
 } = require('child_process');
@@ -32,14 +32,14 @@ function initSocket(socket) {
         })
     })
 
-    socket.on('getCameraOptions', function() {
+    socket.on('getCameraOptions', function () {
         socket.emit('cameraOptions', {
             shutterSpeedOptions: shutterSpeedOptions,
-            isoOptions: isoOptions 
+            isoOptions: isoOptions
         })
     })
 
-    socket.on('generateRampingConfig', function(data) {
+    socket.on('generateRampingConfig', function (data) {
         generateRampingConfig(data.minIso, data.maxIso, data.minShutterSpeed, data.maxShutterSpeed);
     })
 
@@ -55,8 +55,8 @@ function initSocket(socket) {
 
 }
 
-var shutterSpeedOptions = [4,1,0.5,0.1,0.05];
-var isoOptions = [100,200,400,600,800,1000];
+var shutterSpeedOptions = ['0.05', '0.1', '0.5', '1', '4']; //short to long
+var isoOptions = ['100', '200', '400', '600', '800', '1000']; //small to big
 var CONFIGS = [];
 
 killProcess()
@@ -131,7 +131,7 @@ function resetCamera() {
                 device.open();
 
                 //reset('/dev/bus/usb/001/' + id, function (err, data) {
-                device.reset(function(err) {
+                device.reset(function (err) {
                     GPhoto.list(async function (list) {
                         if (list.length === 0) {
                             reject(new Error("No camera conected"));
@@ -139,7 +139,7 @@ function resetCamera() {
                         }
                         camera = list[0];
                         console.log('Found', camera.model);
-            
+
                         if (CONFIGS.length === 0) {
                             spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
                             getCameraOptions();
@@ -372,32 +372,34 @@ function searchConfig(shutterSpeed, iso) {
 }
 
 function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
-    console.log('minIso: ' + minIso);
-    console.log('maxIso: ' + maxIso);
-    console.log('minShutterSpeed: ' + minShutterSpeed);
-    console.log('maxShutterSpeed: ' + maxShutterSpeed);
-    // TODO: CONFIGS aufgrund der Werte zusammenstellen
+    console.log('index of mI: ' + isoOptions.indexOf(minIso));
+    console.log('index of maxI: ' + isoOptions.indexOf(maxIso));
+    console.log('index of mS: ' + shutterSpeedOptions.indexOf(minShutterSpeed));
+    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(maxShutterSpeed));
+    var options = [];
+    var newIsoOptions = isoOptions.slice(isoOptions.indexOf(minIso), isoOptions.indexOf(maxIso) + 1);
+    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(minShutterSpeed), shutterSpeedOptions.indexOf(maxShutterSpeed) + 1);
+    console.log(newIsoOptions);
+    console.log(newShutterSpeedOptions);
+
+    for (var i = 0; i < (newShutterSpeedOptions.length + newIsoOptions.length - 1); i++) {
+        var option;
+
+        if (newShutterSpeedOptions[i] != undefined) {
+            option = [newShutterSpeedOptions[i], newIsoOptions[0]];
+        } else if (newIsoOptions[i + 1 - newShutterSpeedOptions.length] != undefined) {
+            option = [newShutterSpeedOptions[newShutterSpeedOptions.length - 1], newIsoOptions[i + 1 - newShutterSpeedOptions.length]];
+        }
+        options.push(option);
+    }
+    CONFIGS = options;
+    console.log('Camera Options: ' + CONFIGS);
 }
 
 function getCameraOptions() {
     return new Promise(async function (resolve, reject) {
         shutterSpeedOptions = await getShutterSpeedOptions();
         isoOptions = await getIsoOptions();
-
-        /*var options = []
-
-        for (var i = 0; i < (shutterSpeedOptions.length + isoOptions.length); i++) {
-            var option;
-
-            if (shutterSpeedOptions[i] != undefined) {
-                option = [shutterSpeedOptions[i], isoOptions[0]];
-            } else if (isoOptions[i + 1 - shutterSpeedOptions.length] != undefined) {
-                option = [shutterSpeedOptions[shutterSpeedOptions.length - 1], isoOptions[i + 1 - shutterSpeedOptions.length]];
-            }
-            options.push(option);
-        }
-        CONFIGS = options;
-        console.log('Camera Options: ' + CONFIGS);*/
     });
 }
 
@@ -417,7 +419,7 @@ function getShutterSpeedOptions() {
                         if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(shutterspeed);
                     }
                 }
-                if(shutterSpeedOptions[0] == 30){
+                if (shutterSpeedOptions[0] == 30) {
                     var inverted = shutterSpeedOptions.reverse();
                     shutterSpeedOptions = inverted;
                 }
@@ -481,13 +483,13 @@ function getUsbDevice() {
     return new Promise(function (resolve, reject) {
         var devices = usb.getDeviceList();
 
-        for(var i = 0; i < devices.length; i ++){
+        for (var i = 0; i < devices.length; i++) {
             var idVendor = devices[i]['deviceDescriptor']['idVendor'];
             var idProduct = devices[i]['deviceDescriptor']['idProduct'];
 
             if (idVendor != 1060 && idVendor != 7531 && idVendor != 6790) {
                 var device = usb.findByIds(idVendor, idProduct);
-                if(device != undefined){
+                if (device != undefined) {
                     resolve(device);
                 }
                 return;

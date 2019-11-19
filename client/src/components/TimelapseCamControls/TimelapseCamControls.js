@@ -6,7 +6,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
-
+import { withSnackbar } from 'notistack';
 
 
 class TimelapseCamControls extends React.Component {
@@ -39,10 +39,7 @@ class TimelapseCamControls extends React.Component {
                 isoOptions: data.isoOptions,
                 minIso: data.isoOptions[0],
                 maxIso: data.isoOptions[data.isoOptions.length - 1]
-            }, function () {
-                console.log(this.state.shutterSpeedOptions);
-                console.log(this.state.isoOptions);
-            })
+            });
         });
         this.props.socket.emit('getCameraOptions');
     }
@@ -82,21 +79,30 @@ class TimelapseCamControls extends React.Component {
         })*/
         this.setState({ loading: false });
         this.setState({ referencePicture: true });
-        if(this.state.rampingConfig) this.props.camControlsOk(true);
+        if (this.state.rampingConfig) this.props.camControlsOk(true);
     }
 
     genereateRampingConfig() {
-        this.props.socket.emit('generateRampingConfig', {
-            minIso: this.state.minIso,
-            maxIso: this.state.maxIso,
-            minShutterSpeed: this.state.minShutterSpeed,
-            maxShutterSpeed: this.state.maxShutterSpeed
-        });
-        this.setState({ rampingConfig: true });
-        if(this.state.referencePicture) this.props.camControlsOk(true);
+        if (this.state.minIso <= this.state.maxIso && this.state.minShutterSpeed <= this.state.maxShutterSpeed) {
+            this.props.socket.emit('generateRampingConfig', {
+                minIso: this.state.minIso,
+                maxIso: this.state.maxIso,
+                minShutterSpeed: this.state.minShutterSpeed,
+                maxShutterSpeed: this.state.maxShutterSpeed
+            });
+            this.setState({ rampingConfig: true });
+            if (this.state.referencePicture) this.props.camControlsOk(true);
+        } else {
+            this.props.enqueueSnackbar('Invalid values');
+        }
+
     }
 
     render() {
+        const selectStyle = {
+            minWidth: 150,
+            margin: '1em'
+          };
         return (
             <div>
                 <FormControlLabel
@@ -106,13 +112,16 @@ class TimelapseCamControls extends React.Component {
                     label="Control brightness"
                 />
                 {this.props.brightnessControl && !this.state.referencePicture && !this.state.loading &&
+                <div>
                     <Button variant="contained" onClick={this.takeReferencePicture}>
                         Take Reference Picture
                     </Button>
+                    </div>
                 }
                 {this.props.brightnessControl && !this.state.rampingConfig &&
                     <div>
-                        <FormControl >
+                        <div>
+                        <FormControl style={selectStyle}>
                             <InputLabel htmlFor="age-native-simple">Min. Shutter-Speed</InputLabel>
                             <Select
                                 native
@@ -126,7 +135,7 @@ class TimelapseCamControls extends React.Component {
                                 {this.createShutterSpeedOptions()}
                             </Select>
                         </FormControl>
-                        <FormControl >
+                        <FormControl style={selectStyle}>
                             <InputLabel htmlFor="age-native-simple">Max. Shutter-Speed</InputLabel>
                             <Select
                                 native
@@ -140,7 +149,9 @@ class TimelapseCamControls extends React.Component {
                                 {this.createShutterSpeedOptions()}
                             </Select>
                         </FormControl>
-                        <FormControl >
+                        </div>
+                        <div>
+                        <FormControl style={selectStyle}>
                             <InputLabel htmlFor="age-native-simple">Min. ISO</InputLabel>
                             <Select
                                 native
@@ -154,7 +165,7 @@ class TimelapseCamControls extends React.Component {
                                 {this.createIsoOptions()}
                             </Select>
                         </FormControl>
-                        <FormControl >
+                        <FormControl style={selectStyle}>
                             <InputLabel htmlFor="age-native-simple">Max. ISO</InputLabel>
                             <Select
                                 native
@@ -168,7 +179,7 @@ class TimelapseCamControls extends React.Component {
                                 {this.createIsoOptions()}
                             </Select>
                         </FormControl>
-
+                        </div>
                         <Button variant="contained" onClick={this.genereateRampingConfig}>
                             Generate Ramping-Config
                     </Button>
@@ -183,4 +194,4 @@ class TimelapseCamControls extends React.Component {
 
 }
 
-export default TimelapseCamControls;
+export default withSnackbar(TimelapseCamControls);
