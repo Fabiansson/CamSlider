@@ -21,6 +21,10 @@ var sensibility = 1250;
 
 var currentStep = 21;
 
+var shutterSpeedOptions = ['0.05', '0.1', '0.5', '1', '4']; //short to long
+var isoOptions = ['100', '200', '400', '600', '800', '1000']; //small to big
+var CONFIGS = [];
+
 var socket;
 
 function initSocket(socket) {
@@ -54,10 +58,6 @@ function initSocket(socket) {
     })
 
 }
-
-var shutterSpeedOptions = ['0.05', '0.1', '0.5', '1', '4']; //short to long
-var isoOptions = ['100', '200', '400', '600', '800', '1000']; //small to big
-var CONFIGS = [];
 
 killProcess()
     .then(resetCamera()
