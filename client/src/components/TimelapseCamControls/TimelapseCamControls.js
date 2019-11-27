@@ -120,7 +120,7 @@ class TimelapseCamControls extends React.Component {
                     }
                     label="Control brightness"
                 />
-                {this.props.brightnessControl && !this.state.referencePicture && !this.state.loading && this.state.rampingConfig
+                {this.props.brightnessControl && !this.state.referencePicture && !this.state.loading && this.state.rampingConfig &&
                 <div>
                     <Button variant="contained" onClick={this.takeReferencePicture}>
                         Take Reference Picture
