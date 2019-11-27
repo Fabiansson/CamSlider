@@ -142,7 +142,7 @@ function resetCamera() {
 
                         if (CONFIGS.length === 0) {
                             spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
-                            await sleep(3000);
+                            //await sleep(3000);
                             getCameraOptions();
                         }
                         resolve(true);
@@ -182,9 +182,9 @@ function takeReferencePicture() {
             reference = brightness;
             console.log("Reference IS: " + reference);
             await resetCamera();
-            await sleep(2000);
+            //await sleep(2000);
             var iso = await getIso();
-            await sleep(2000);
+            //await sleep(2000);
             var shutterSpeed = await getShutterSpeed();
             currentStep = searchConfig(shutterSpeed, iso);
             console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
