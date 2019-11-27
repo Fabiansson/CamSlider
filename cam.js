@@ -21,8 +21,8 @@ var sensibility = 1250;
 
 var currentStep = 21;
 
-var shutterSpeedOptions = ['0.05', '0.1', '0.5', '1', '4']; //short to long
-var isoOptions = ['100', '200', '400', '600', '800', '1000']; //small to big
+var shutterSpeedOptions = []; //short to long
+var isoOptions = []; //small to big
 var CONFIGS = [];
 
 var socket;
@@ -142,6 +142,7 @@ function resetCamera() {
 
                         if (CONFIGS.length === 0) {
                             spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
+                            await sleep(3000);
                             getCameraOptions();
                         }
                         resolve(true);
@@ -181,7 +182,9 @@ function takeReferencePicture() {
             reference = brightness;
             console.log("Reference IS: " + reference);
             await resetCamera();
+            await sleep(2000);
             var iso = await getIso();
+            await sleep(2000);
             var shutterSpeed = await getShutterSpeed();
             currentStep = searchConfig(shutterSpeed, iso);
             console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
@@ -214,10 +217,10 @@ async function takePictureWithRamping(analyse) {
             if (analyse) {
                 var brightness = await analyseImage(lastImage);
                 currentBrightness = brightness;
-                if (currentBrightness - reference > sensibility) {
+                if (currentBrightness - reference > sensibility && currentStep - 1 > 0) {
                     currentStep--;
                     console.log("Brightness Step got decreased.");
-                } else if (currentBrightness - reference < (sensibility * -1)) {
+                } else if (currentBrightness - reference < (sensibility * -1) && currentStep + 1 < CONFIGS.length) {
                     currentStep++;
                     console.log("Brightness Step got increased.");
                 }
@@ -282,7 +285,7 @@ function takePictureAndDownload(keep) {
 function getShutterSpeed() {
     return new Promise(function (resolve, reject) {
         if (!devMode) {
-            const ls = spawn('gphoto2', ['--get-config=shutterspeed2']);
+            const ls = spawn('gphoto2', ['--get-config=shutterspeed']);
 
             ls.stdout.on('data', (data) => {
                 var shutterspeed = data.toString().split('\n')[3].split(' ')[1];

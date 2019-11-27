@@ -8,6 +8,7 @@ import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import { withSnackbar } from 'notistack';
 import { Typography } from '@material-ui/core';
+import { ENGINE_METHOD_DIGESTS } from 'constants';
 
 
 class TimelapseCamControls extends React.Component {
@@ -87,6 +88,7 @@ class TimelapseCamControls extends React.Component {
     }
 
     genereateRampingConfig() {
+        console.log('MinISO: ' + this.state.minIso + " " + 'MaxISO: ' + this.state.maxIso + " " + 'MinShutterSpeed: ' + this.state.minShutterSpeed + " " + 'MaxShutterSpeed: ' + this.state.maxShutterSpeed);
         if (this.state.minIso <= this.state.maxIso && this.state.minShutterSpeed <= this.state.maxShutterSpeed) {
             this.props.socket.emit('generateRampingConfig', {
                 minIso: this.state.minIso,
@@ -118,7 +120,7 @@ class TimelapseCamControls extends React.Component {
                     }
                     label="Control brightness"
                 />
-                {this.props.brightnessControl && !this.state.referencePicture && !this.state.loading &&
+                {this.props.brightnessControl && !this.state.referencePicture && !this.state.loading && this.state.rampingConfig
                 <div>
                     <Button variant="contained" onClick={this.takeReferencePicture}>
                         Take Reference Picture
