@@ -33,13 +33,14 @@ class TimelapseCamControls extends React.Component {
     }
 
     componentDidMount() {
-        this.props.socket.on('analysingDone', data => {
+        this.props.socket.on('takingReferencePictureDone', data => {
             this.setState({ loading: false });
             this.setState({ referencePicture: data.success });
             if (data.success && this.state.rampingConfig) {
                 this.props.camControlsOk(true);
             } else if (!data.success) {
-                this.props.enqueueSnackbar('Taking Reference Pictrue failed.');
+                this.props.enqueueSnackbar('Taking Reference Pictrue failed or settings are not in Ramping-Config.');
+                this.setState({ rampingConfig: false });
             }
         })
 

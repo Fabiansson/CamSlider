@@ -21,8 +21,8 @@ var sensibility = 1250;
 
 var currentStep = 21;
 
-var shutterSpeedOptions = []; //short to long
-var isoOptions = []; //small to big
+var shutterSpeedOptions = [0.1, 0.4, 1, 4, 10]; //short to long
+var isoOptions = [100, 200, 400, 800, 1000]; //small to big
 var CONFIGS = [];
 
 var socket;
@@ -50,9 +50,24 @@ function initSocket(socket) {
     socket.on('takeReferencePicture', async () => {
         console.log("Take Reference Picture");
         try {
-            await takeReferencePicture();
+            var iso = await getIso();
+            var shutterSpeed = await getShutterSpeed();
+            if (searchConfig(shutterSpeed, iso) != null) {
+                await takeReferencePicture();
+                socket.emit('takingReferencePictureDone', {
+                    success: true
+                });
+            } else {
+                console.log('Taking ref picture failed. Setting do not match ramping config.');
+                socket.emit('takingReferencePictureDone', {
+                    success: false
+                });
+            } 
         } catch (er) {
             console.log(er);
+            socket.emit('takingReferencePictureDone', {
+                success: false
+            })
         }
 
     })
@@ -188,14 +203,8 @@ function takeReferencePicture() {
             var shutterSpeed = await getShutterSpeed();
             currentStep = searchConfig(shutterSpeed, iso);
             console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
-            global.socket.emit('analysingDone', {
-                success: true
-            });
             resolve();
         } catch (er) {
-            global.socket.emit('analysingDone', {
-                success: false
-            });
             reject(er);
             console.log(er);
         }
@@ -375,13 +384,13 @@ function searchConfig(shutterSpeed, iso) {
 }
 
 function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
-    console.log('index of mI: ' + isoOptions.indexOf(minIso));
-    console.log('index of maxI: ' + isoOptions.indexOf(maxIso));
-    console.log('index of mS: ' + shutterSpeedOptions.indexOf(minShutterSpeed));
-    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(maxShutterSpeed));
+    console.log('index of mI: ' + isoOptions.indexOf(parseFloat(minIso)));
+    console.log('index of maxI: ' + isoOptions.indexOf(parseFloat(maxIso)));
+    console.log('index of mS: ' + shutterSpeedOptions.indexOf(parseFloat(minShutterSpeed)));
+    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(parseFloat(maxShutterSpeed)));
     var options = [];
-    var newIsoOptions = isoOptions.slice(isoOptions.indexOf(minIso), isoOptions.indexOf(maxIso) + 1);
-    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(minShutterSpeed), shutterSpeedOptions.indexOf(maxShutterSpeed) + 1);
+    var newIsoOptions = isoOptions.slice(isoOptions.indexOf(parseFloat(minIso)), isoOptions.indexOf(parseFloat(maxIso)) + 1);
+    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(parseFloat(minShutterSpeed)), shutterSpeedOptions.indexOf(parseFloat(maxShutterSpeed)) + 1);
     console.log(newIsoOptions);
     console.log(newShutterSpeedOptions);
 
