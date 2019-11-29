@@ -58,6 +58,7 @@ function initSocket(socket) {
                     success: true
                 });
             } else {
+                console.log('Taking ref picture failed. Setting do not match ramping config.');
                 socket.emit('takingReferencePictureDone', {
                     success: false
                 });
