@@ -50,9 +50,23 @@ function initSocket(socket) {
     socket.on('takeReferencePicture', async () => {
         console.log("Take Reference Picture");
         try {
-            await takeReferencePicture();
+            var iso = await getIso();
+            var shutterSpeed = await getShutterSpeed();
+            if (searchConfig(shutterSpeed, iso) != null) {
+                await takeReferencePicture();
+                socket.emit('takingReferencePictureDone', {
+                    success: true
+                });
+            } else {
+                socket.emit('takingReferencePictureDone', {
+                    success: false
+                });
+            } 
         } catch (er) {
             console.log(er);
+            socket.emit('takingReferencePictureDone', {
+                success: false
+            })
         }
 
     })
@@ -188,14 +202,8 @@ function takeReferencePicture() {
             var shutterSpeed = await getShutterSpeed();
             currentStep = searchConfig(shutterSpeed, iso);
             console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
-            global.socket.emit('analysingDone', {
-                success: true
-            });
             resolve();
         } catch (er) {
-            global.socket.emit('analysingDone', {
-                success: false
-            });
             reject(er);
             console.log(er);
         }
