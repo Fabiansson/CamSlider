@@ -7,6 +7,7 @@ var usb = require('usb')
 var fs = require('fs');
 var gphoto2 = require('gphoto2');
 var im = require('imagemagick');
+var camData = require('./camData.json');
 if (!devMode) var GPhoto = new gphoto2.GPhoto2();
 
 var camera = null;
@@ -21,8 +22,8 @@ var sensibility = 1250;
 
 var currentStep = 21;
 
-var shutterSpeedOptions = []; //short to long
-var isoOptions = []; //small to big
+var shutterSpeedOptions = [0.1, 0.4, 1, 4, 10]; //short to long
+var isoOptions = [100, 200, 400, 800, 1000]; //small to big
 var CONFIGS = [];
 
 var socket;
@@ -37,22 +38,50 @@ function initSocket(socket) {
     })
 
     socket.on('getCameraOptions', function () {
+        var cameraCollection = [];
+
+        camData.forEach((camera) => {
+            cameraCollection.push(camera);
+        })
+
         socket.emit('cameraOptions', {
-            shutterSpeedOptions: shutterSpeedOptions,
-            isoOptions: isoOptions
+            cameraCollection: cameraCollection
+        })
+    })
+
+    socket.on('readCameraOptions', async function () {
+        var cameraOptions = await readCameraOptions();
+        socket.emit('doneReadingCameraOptions', {
+            shutterSpeedOptions: cameraOptions[0],
+            isoOptions: cameraOptions[1]
         })
     })
 
     socket.on('generateRampingConfig', function (data) {
-        generateRampingConfig(data.minIso, data.maxIso, data.minShutterSpeed, data.maxShutterSpeed);
+        generateRampingConfig(data.camera, data.minIso, data.maxIso, data.minShutterSpeed, data.maxShutterSpeed);
     })
 
     socket.on('takeReferencePicture', async () => {
         console.log("Take Reference Picture");
         try {
-            await takeReferencePicture();
+            var iso = await getIso();
+            var shutterSpeed = await getShutterSpeed();
+            if (searchConfig(shutterSpeed, iso) != null) {
+                await takeReferencePicture();
+                socket.emit('takingReferencePictureDone', {
+                    success: true
+                });
+            } else {
+                console.log('Taking ref picture failed. Setting do not match ramping config.');
+                socket.emit('takingReferencePictureDone', {
+                    success: false
+                });
+            }
         } catch (er) {
             console.log(er);
+            socket.emit('takingReferencePictureDone', {
+                success: false
+            })
         }
 
     })
@@ -81,10 +110,8 @@ usb.on('attach', async function (device) {
             console.log(list);
             if (list.length === 0) return;
             camera = list[0];
-            if (CONFIGS.length === 0) {
-                spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
-                getCameraOptions();
-            }
+            spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
+
             global.socket.emit('hasCamera', {
                 hasCamera: camera != null
             })
@@ -139,12 +166,8 @@ function resetCamera() {
                         }
                         camera = list[0];
                         console.log('Found', camera.model);
+                        spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
 
-                        if (CONFIGS.length === 0) {
-                            spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
-                            //await sleep(3000);
-                            getCameraOptions();
-                        }
                         resolve(true);
                     });
                 })
@@ -188,14 +211,8 @@ function takeReferencePicture() {
             var shutterSpeed = await getShutterSpeed();
             currentStep = searchConfig(shutterSpeed, iso);
             console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
-            global.socket.emit('analysingDone', {
-                success: true
-            });
             resolve();
         } catch (er) {
-            global.socket.emit('analysingDone', {
-                success: false
-            });
             reject(er);
             console.log(er);
         }
@@ -289,7 +306,7 @@ function getShutterSpeed() {
 
             ls.stdout.on('data', (data) => {
                 var shutterspeed = data.toString().split('\n')[3].split(' ')[1];
-                resolve(shutterspeed);
+                resolve(parseFloat(shutterspeed));
             });
 
             ls.stderr.on('data', (data) => {
@@ -307,7 +324,7 @@ function getIso() {
 
             ls.stdout.on('data', (data) => {
                 var iso = data.toString().split('\n')[3].split(' ')[1];
-                resolve(iso);
+                resolve(parseInt(iso));
             });
             ls.stderr.on('data', (data) => {
                 console.log(data);
@@ -374,14 +391,24 @@ function searchConfig(shutterSpeed, iso) {
     return step;
 }
 
-function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
-    console.log('index of mI: ' + isoOptions.indexOf(minIso));
-    console.log('index of maxI: ' + isoOptions.indexOf(maxIso));
-    console.log('index of mS: ' + shutterSpeedOptions.indexOf(minShutterSpeed));
-    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(maxShutterSpeed));
+function generateRampingConfig(camera, minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
+    if (camera != 'new') {
+        console.log(camera);
+        console.log('cam not new and  it think it is this one for generatin RampingConfig: ' + camData[camera]);
+        shutterSpeedOptions = camData[camera].shutterSpeedOptions;
+        isoOptions = camData[camera].isoOptions;
+    }
+    console.log('index of camera: ' + camera);
+    console.log('camera: ' + camData[camera]);
+    console.log('shutterSpeedOptions: ' + shutterSpeedOptions);
+    console.log('isoOptions: ' + isoOptions);
+    console.log('index of mI: ' + isoOptions.indexOf(parseInt(minIso)));
+    console.log('index of maxI: ' + isoOptions.indexOf(parseInt(maxIso)));
+    console.log('index of mS: ' + shutterSpeedOptions.indexOf(parseFloat(minShutterSpeed)));
+    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(parseFloat(maxShutterSpeed)));
     var options = [];
-    var newIsoOptions = isoOptions.slice(isoOptions.indexOf(minIso), isoOptions.indexOf(maxIso) + 1);
-    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(minShutterSpeed), shutterSpeedOptions.indexOf(maxShutterSpeed) + 1);
+    var newIsoOptions = isoOptions.slice(isoOptions.indexOf(parseInt(minIso)), isoOptions.indexOf(parseInt(maxIso)) + 1);
+    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(parseFloat(minShutterSpeed)), shutterSpeedOptions.indexOf(parseFloat(maxShutterSpeed)) + 1);
     console.log(newIsoOptions);
     console.log(newShutterSpeedOptions);
 
@@ -399,10 +426,18 @@ function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed)
     console.log('Camera Options: ' + CONFIGS);
 }
 
-function getCameraOptions() {
+function readCameraOptions() {
     return new Promise(async function (resolve, reject) {
-        shutterSpeedOptions = await getShutterSpeedOptions();
-        isoOptions = await getIsoOptions();
+        try {
+            shutterSpeedOptions = await getShutterSpeedOptions();
+            isoOptions = await getIsoOptions();
+            console.log(shutterSpeedOptions);
+            console.log(isoOptions);
+            resolve([shutterSpeedOptions, isoOptions]);
+        } catch (er) {
+            console.log(er);
+            reject(new Error("Could not get Camera Options"));
+        }
     });
 }
 
@@ -419,7 +454,7 @@ function getShutterSpeedOptions() {
                     if (lines[i].startsWith('Choice:')) {
                         var shutterspeed = lines[i].split(' ')[2];
                         //if (shutterspeed == '5') break;
-                        if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(shutterspeed);
+                        if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(parseFloat(shutterspeed));
                     }
                 }
                 if (shutterSpeedOptions[0] == 30) {
@@ -433,7 +468,7 @@ function getShutterSpeedOptions() {
                 reject(new Error("Could not get shutterSpeedOptions"))
             });
         }
-        if (devMode) resolve(['1/1000', '1/4']);
+        if (devMode) resolve([0.01, 0.25, 1, 20]);
     });
 }
 
@@ -449,7 +484,8 @@ function getIsoOptions() {
                 for (var i = 0; i < lines.length; i++) {
                     if (lines[i].startsWith('Choice:') && !lines[i].endsWith('Reduction')) {
                         var iso = lines[i].split(' ')[2];
-                        if (iso != 'Time' && iso != 'Bulb' && iso != 'Auto' && iso >= 50) isoOptions.push(iso);
+                        if (iso != 'Time' && iso != 'Bulb' && iso != 'Auto' && iso >= 50) isoOptions.push(parseInt(iso)
+                        );
                     }
                 }
                 resolve(isoOptions);
@@ -459,7 +495,7 @@ function getIsoOptions() {
                 reject(new Error("Could not get isoOptions"))
             });
         }
-        if (devMode) resolve([100, 200]);
+        if (devMode) resolve([100, 200, 500, 1000]);
     });
 }
 
