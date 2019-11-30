@@ -1,0 +1,11 @@
+[{
+    "name" : "Nikon",
+    "shutterSpeedOptions": [1,2,3,4],
+    "isoOptions": [100, 200, 300, 1000]
+},
+{
+    "name": "Canon",
+    "shutterSpeedOptions": [10,20,30,40],
+    "isoOptions": [50, 100, 500, 20000]
+}
+]
