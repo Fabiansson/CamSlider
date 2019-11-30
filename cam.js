@@ -393,6 +393,8 @@ function searchConfig(shutterSpeed, iso) {
 
 function generateRampingConfig(camera, minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
     if (camera != 'new') {
+        console.log(camera);
+        console.log('cam not new and  it think it is this one for generatin RampingConfig: ' + camData[camera]);
         shutterSpeedOptions = camData[camera].shutterSpeedOptions;
         isoOptions = camData[camera].isoOptions;
     }
@@ -482,7 +484,8 @@ function getIsoOptions() {
                 for (var i = 0; i < lines.length; i++) {
                     if (lines[i].startsWith('Choice:') && !lines[i].endsWith('Reduction')) {
                         var iso = lines[i].split(' ')[2];
-                        if (iso != 'Time' && iso != 'Bulb' && iso != 'Auto' && iso >= 50) isoOptions.push(parseInt(iso));
+                        if (iso != 'Time' && iso != 'Bulb' && iso != 'Auto' && iso >= 50) isoOptions.push(parseInt(iso)
+                        );
                     }
                 }
                 resolve(isoOptions);
