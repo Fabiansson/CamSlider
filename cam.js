@@ -482,7 +482,7 @@ function getIsoOptions() {
                 for (var i = 0; i < lines.length; i++) {
                     if (lines[i].startsWith('Choice:') && !lines[i].endsWith('Reduction')) {
                         var iso = lines[i].split(' ')[2];
-                        if (iso != 'Time' && iso != 'Bulb' && iso != 'Auto' && iso >= 50) isoOptions.push(iso);
+                        if (iso != 'Time' && iso != 'Bulb' && iso != 'Auto' && iso >= 50) isoOptions.push(parseInt(iso));
                     }
                 }
                 resolve(isoOptions);
