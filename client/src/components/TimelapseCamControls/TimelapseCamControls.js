@@ -49,7 +49,7 @@ class TimelapseCamControls extends React.Component {
         this.props.socket.on('cameraOptions', (data) => {
             this.setState({
                 cameraCollection: data.cameraCollection,
-                selectedCamera: data.cameraCollection[0],
+                selectedCamera: 0,
                 shutterSpeedOptions: data.cameraCollection[0].shutterSpeedOptions,
                 minShutterSpeed: data.cameraCollection[0].shutterSpeedOptions[0],
                 maxShutterSpeed: data.cameraCollection[0].shutterSpeedOptions[data.cameraCollection[0].shutterSpeedOptions.length - 1],
