@@ -8,7 +8,6 @@ var fs = require('fs');
 var gphoto2 = require('gphoto2');
 var im = require('imagemagick');
 var camData = require('./camData.json');
-console.log(camData[0].camera);
 if (!devMode) var GPhoto = new gphoto2.GPhoto2();
 
 var camera = null;
@@ -46,9 +45,7 @@ function initSocket(socket) {
         })
 
         socket.emit('cameraOptions', {
-            cameraCollection: cameraCollection,
-            shutterSpeedOptions: shutterSpeedOptions,
-            isoOptions: isoOptions
+            cameraCollection: cameraCollection
         })
     })
 
