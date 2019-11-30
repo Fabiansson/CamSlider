@@ -7,6 +7,7 @@ var usb = require('usb')
 var fs = require('fs');
 var gphoto2 = require('gphoto2');
 var im = require('imagemagick');
+var camData = require('./camData.json');
 if (!devMode) var GPhoto = new gphoto2.GPhoto2();
 
 var camera = null;
@@ -37,14 +38,27 @@ function initSocket(socket) {
     })
 
     socket.on('getCameraOptions', function () {
+        var cameraCollection = [];
+
+        camData.forEach((camera) => {
+            cameraCollection.push(camera);
+        })
+
         socket.emit('cameraOptions', {
-            shutterSpeedOptions: shutterSpeedOptions,
-            isoOptions: isoOptions
+            cameraCollection: cameraCollection
+        })
+    })
+
+    socket.on('readCameraOptions', async function () {
+        var cameraOptions = await readCameraOptions();
+        socket.emit('doneReadingCameraOptions', {
+            shutterSpeedOptions: cameraOptions[0],
+            isoOptions: cameraOptions[1]
         })
     })
 
     socket.on('generateRampingConfig', function (data) {
-        generateRampingConfig(data.minIso, data.maxIso, data.minShutterSpeed, data.maxShutterSpeed);
+        generateRampingConfig(data.camera, data.minIso, data.maxIso, data.minShutterSpeed, data.maxShutterSpeed);
     })
 
     socket.on('takeReferencePicture', async () => {
@@ -62,7 +76,7 @@ function initSocket(socket) {
                 socket.emit('takingReferencePictureDone', {
                     success: false
                 });
-            } 
+            }
         } catch (er) {
             console.log(er);
             socket.emit('takingReferencePictureDone', {
@@ -96,10 +110,8 @@ usb.on('attach', async function (device) {
             console.log(list);
             if (list.length === 0) return;
             camera = list[0];
-            if (CONFIGS.length === 0) {
-                spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
-                getCameraOptions();
-            }
+            spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
+
             global.socket.emit('hasCamera', {
                 hasCamera: camera != null
             })
@@ -154,12 +166,8 @@ function resetCamera() {
                         }
                         camera = list[0];
                         console.log('Found', camera.model);
+                        spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
 
-                        if (CONFIGS.length === 0) {
-                            spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
-                            //await sleep(3000);
-                            getCameraOptions();
-                        }
                         resolve(true);
                     });
                 })
@@ -383,7 +391,15 @@ function searchConfig(shutterSpeed, iso) {
     return step;
 }
 
-function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
+function generateRampingConfig(camera, minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
+    if (camera != 'new') {
+        shutterSpeedOptions = camData[camera].shutterSpeedOptions;
+        isoOptions = camData[camera].isoOptions;
+    }
+    console.log('index of camera: ' + camera);
+    console.log('camera: ' + camData[camera]);
+    console.log('shutterSpeedOptions: ' + shutterSpeedOptions);
+    console.log('isoOptions: ' + isoOptions);
     console.log('index of mI: ' + isoOptions.indexOf(parseFloat(minIso)));
     console.log('index of maxI: ' + isoOptions.indexOf(parseFloat(maxIso)));
     console.log('index of mS: ' + shutterSpeedOptions.indexOf(parseFloat(minShutterSpeed)));
@@ -408,10 +424,18 @@ function generateRampingConfig(minIso, maxIso, minShutterSpeed, maxShutterSpeed)
     console.log('Camera Options: ' + CONFIGS);
 }
 
-function getCameraOptions() {
+function readCameraOptions() {
     return new Promise(async function (resolve, reject) {
-        shutterSpeedOptions = await getShutterSpeedOptions();
-        isoOptions = await getIsoOptions();
+        try {
+            shutterSpeedOptions = await getShutterSpeedOptions();
+            isoOptions = await getIsoOptions();
+            console.log(shutterSpeedOptions);
+            console.log(isoOptions);
+            resolve([shutterSpeedOptions, isoOptions]);
+        } catch (er) {
+            console.log(er);
+            reject(new Error("Could not get Camera Options"));
+        }
     });
 }
 
@@ -442,7 +466,7 @@ function getShutterSpeedOptions() {
                 reject(new Error("Could not get shutterSpeedOptions"))
             });
         }
-        if (devMode) resolve(['1/1000', '1/4']);
+        if (devMode) resolve([0.01, 0.25, 1, 20]);
     });
 }
 
@@ -468,7 +492,7 @@ function getIsoOptions() {
                 reject(new Error("Could not get isoOptions"))
             });
         }
-        if (devMode) resolve([100, 200]);
+        if (devMode) resolve([100, 200, 500, 1000]);
     });
 }
 
