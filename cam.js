@@ -432,6 +432,8 @@ function readCameraOptions() {
         try {
             shutterSpeedOptions = await getShutterSpeedOptions();
             isoOptions = await getIsoOptions();
+            console.log(shutterSpeedOptions);
+            console.log(isoOptions);
             resolve([shutterSpeedOptions, isoOptions]);
         } catch (er) {
             console.log(er);
