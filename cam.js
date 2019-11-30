@@ -306,7 +306,7 @@ function getShutterSpeed() {
 
             ls.stdout.on('data', (data) => {
                 var shutterspeed = data.toString().split('\n')[3].split(' ')[1];
-                resolve(shutterspeed);
+                resolve(parseFloat(shutterspeed));
             });
 
             ls.stderr.on('data', (data) => {
@@ -324,7 +324,7 @@ function getIso() {
 
             ls.stdout.on('data', (data) => {
                 var iso = data.toString().split('\n')[3].split(' ')[1];
-                resolve(iso);
+                resolve(parseInt(iso));
             });
             ls.stderr.on('data', (data) => {
                 console.log(data);
