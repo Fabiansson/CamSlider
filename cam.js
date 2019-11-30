@@ -452,7 +452,7 @@ function getShutterSpeedOptions() {
                     if (lines[i].startsWith('Choice:')) {
                         var shutterspeed = lines[i].split(' ')[2];
                         //if (shutterspeed == '5') break;
-                        if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(parseInt(shutterspeed));
+                        if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(parseFloat(shutterspeed));
                     }
                 }
                 if (shutterSpeedOptions[0] == 30) {
