@@ -55,6 +55,7 @@ function initSocket(socket){
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
     running = 'timelapse';
+    abort = false;
     var amountPauses = (movieTime * 25);
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
     console.log(timelapseWaypoints);

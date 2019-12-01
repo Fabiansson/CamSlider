@@ -93,6 +93,7 @@ function initSocket(socket) {
 async function panorama() {
     console.log('PLAN STARTING!');
     running = 'panorama';
+    abort = false;
 
     var limit = waypoints.length;
 
