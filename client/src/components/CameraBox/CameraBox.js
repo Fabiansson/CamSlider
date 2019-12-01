@@ -5,9 +5,6 @@ import LinkedCameraIcon from '@material-ui/icons/LinkedCamera';
 import DoneIcon from '@material-ui/icons/Done';
 import { green } from '@material-ui/core/colors';
 import { red } from '@material-ui/core/colors';
-import Snackbar from '@material-ui/core/Snackbar';
-import IconButton from '@material-ui/core/IconButton';
-import CloseIcon from '@material-ui/icons/Close';
 
 
 
@@ -33,22 +30,12 @@ const theme = createMuiTheme({
 function CameraBox(props) {
   const classes = useStyles();
   const cameraActive = props.cameraActive;
-  const hasCamera = props.hasCamera;
-  const [open, setOpen] = React.useState(false);
-
 
   function handleClick() {
     props.toggleCamera();
-    setOpen(true);
+  
   }
 
-  function handleClose(event, reason) {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setOpen(false);
-  }
 
 
   if (cameraActive) {
@@ -74,33 +61,6 @@ function CameraBox(props) {
       onClick={handleClick}
       deleteIcon={<DoneIcon />}
     />
-    {!hasCamera &&
-      <Snackbar
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        open={open}
-        autoHideDuration={5000}
-        onClose={handleClose}
-        ContentProps={{
-          'aria-describedby': 'message-id',
-        }}
-        message={<span id="message-id">No camera connected</span>}
-        action={[
-          <IconButton
-            key="close"
-            aria-label="Close"
-            color="inherit"
-            className={classes.close}
-            onClick={handleClose}
-          >
-            <CloseIcon />
-          </IconButton>,
-        ]}
-      />
-    }
-
   </div>);
 }
 

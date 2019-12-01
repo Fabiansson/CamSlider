@@ -36,7 +36,7 @@ function App() {
   return (
     <div className="App">
       <SocketContext.Provider value={socket}>
-        <SnackbarProvider maxSnack={3} dense={true} anchorOrigin={{vertical: 'top', horizontal: 'center'}}>
+        <SnackbarProvider maxSnack={2} dense={true} anchorOrigin={{vertical: 'top', horizontal: 'left'}} autoHideDuration={2000}>
       <MuiPickersUtilsProvider utils={DateFnsUtils}>
         <MuiThemeProvider theme={theme}>
           <Main />

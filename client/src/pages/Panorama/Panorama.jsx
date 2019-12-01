@@ -16,6 +16,7 @@ import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Waterscale from '../../components/Waterscale/Waterscale';
+import { withSnackbar } from 'notistack';
 
 class Panorama extends React.Component {
     constructor(props) {
@@ -43,11 +44,10 @@ class Panorama extends React.Component {
 
         socket.on('hasCamera', data => {
             this.setState({
-                cameraActive: data.hasCamera
-            })
-            this.setState({
+                cameraActive: data.hasCamera,
                 hasCamera: data.hasCamera
             })
+            if (!data.hasCamera) this.props.enqueueSnackbar('No camera connected.');
         })
     }
 
@@ -113,9 +113,6 @@ class Panorama extends React.Component {
             <Header title="Panorama"
                 cameraActive={
                     this.state.cameraActive
-                }
-                hasCamera={
-                    this.state.hasCamera
                 }
                 toggleCamera={
                     this.toggleCamera
@@ -195,4 +192,4 @@ const PanoramaWithSocket = (props) => (
     </SocketContext.Consumer>
 )
 
-export default PanoramaWithSocket;
+export default withSnackbar(PanoramaWithSocket);
