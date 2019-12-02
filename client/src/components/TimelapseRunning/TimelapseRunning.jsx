@@ -9,7 +9,9 @@ class TimelapseRunning extends React.Component {
         this.abort = this.abort.bind(this);
         
         this.state = {
-            waypoints: undefined
+            waypoints: undefined,
+            startTime: undefined,
+            endTime: undefined,
         };
     }
 
@@ -17,7 +19,15 @@ class TimelapseRunning extends React.Component {
     componentDidMount() {
         this.props.socket.on('timelapseInfoResponse', data => {
             this.setState({
-                waypoints: data.waypoints
+                waypoints: data.waypoints,
+                startTime: data.startTime,
+                endTime: data.endTime
+            })
+        })
+
+        this.props.socket.on('progress', (data) => {
+            this.setState({
+                progress: data.value
             })
         })
 
@@ -34,7 +44,12 @@ class TimelapseRunning extends React.Component {
         window.location.href = '/timelapse';
     }
 
-
+    addZero(i) {
+        if (i < 10) {
+          i = "0" + i;
+        }
+        return i;
+      }
 
     render() {
         const abortButtonStyle = {
@@ -48,11 +63,19 @@ class TimelapseRunning extends React.Component {
                 left: '1em',
                 top: '2.5em'
           }
-        
+          const remainingTime = new Date(new Date(this.state.endTime) - new Date());
+          const h = this.addZero(remainingTime.getUTCHours());
+          const m = this.addZero(remainingTime.getUTCMinutes());
+          const s = this.addZero(remainingTime.getUTCSeconds());
+          
         return (<div >
             {this.state.waypoints !== undefined &&
                 <TimelapseGraph waypoints={this.state.waypoints}/>
             }
+            <p><span>Start Time: {new Date(this.state.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
+            <span>Aprox. End Time: {new Date(this.state.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
+            <span>Remaining Time: {h}:{m}:{s}</span>
+            </p>
             
             <Button style={abortButtonStyle} color="secondary" variant="outlined" onClick={this.abort} >Abort</Button>
             

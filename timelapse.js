@@ -1,11 +1,13 @@
 var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
-
 var positions = [];
 var running = null;
 var abort = false;
 
 var timelapseWaypoints;
+
+var startTime = null;
+var endTime = null;
 
 var socket;
 
@@ -35,7 +37,9 @@ function initSocket(socket){
     //for timelapse
     socket.on('timelapseInfo', function(){
         socket.emit('timelapseInfoResponse', {
-            waypoints: timelapseWaypoints
+            waypoints: timelapseWaypoints,
+            startTime: startTime,
+            endTime: endTime
         })
     })
 
@@ -54,6 +58,10 @@ function initSocket(socket){
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
+    startTime = new Date();
+    endTime = new Date();
+    endTime.setSeconds(endTime.getSeconds() + (movieTime * interval * 25));
+
     running = 'timelapse';
     abort = false;
     var amountPauses = (movieTime * 25);
@@ -145,6 +153,8 @@ function generateWaypopints(points, n) {
 }
 
 function softReset() {
+    startTime = null;
+    endTime = null;
     positions = [];
     timelapseWaypoints = [];
     abort = false;
