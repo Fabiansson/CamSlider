@@ -245,7 +245,7 @@ async function takePictureWithRamping(analyse) {
                     currentStep++;
                     console.log("Brightness Step got increased.");
                 }
-                console.log('path: '+ path+' buffer: ' + CONFIGS[currentStep][0] + ' iso: ' + CONFIGS[currentStep][1] + ' brightness: ' + brightness + ' reference: ' + reference);
+                console.log('path: '+ path+' shutterSpeed: ' + CONFIGS[currentStep][0] + ' iso: ' + CONFIGS[currentStep][1] + ' brightness: ' + brightness + ' reference: ' + reference);
                 fs.readFile(path, function(err, data){
                     global.socket.emit('image', { 
                         image: true,
