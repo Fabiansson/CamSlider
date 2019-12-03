@@ -25,7 +25,7 @@ class TimelapseGraph extends React.Component {
         this.setState({data: array});
 
         this.props.socket.on('progress', (data) => {
-            this.setState({progress: data.value})
+            this.setState({progress: data.step})
         })
     }
 

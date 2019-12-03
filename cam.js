@@ -16,15 +16,15 @@ var folder_name = getFolderName();
 var imagesPath = "./imagesTaken/" + folder_name;
 var lastImage;
 
-var reference = "";
+var reference = 30000; //dummy
 var currentBrightness = "";
 var sensibility = 1250;
 
-var currentStep = 21;
+var currentStep = 2;
 
-var shutterSpeedOptions = [0.1, 0.4, 1, 4, 10]; //short to long
-var isoOptions = [100, 200, 400, 800, 1000]; //small to big
-var CONFIGS = [];
+var shutterSpeedOptions = [0.1, 0.4, 1, 4, 10]; //short to long dummy
+var isoOptions = [100, 200, 400, 800, 1000]; //small to big dummy
+var CONFIGS = [[0.1,100],[0.4,100],[1,100],[4,100],[10,100],[10,200],[10,400],[10,800],[10,1000]]; //dummy
 
 var socket;
 
@@ -59,6 +59,10 @@ function initSocket(socket) {
 
     socket.on('generateRampingConfig', function (data) {
         generateRampingConfig(data.camera, data.minIso, data.maxIso, data.minShutterSpeed, data.maxShutterSpeed);
+    })
+
+    socket.on('changeReference', function(data) {
+        reference = reference + data.value;
     })
 
     socket.on('takeReferencePicture', async () => {
@@ -241,6 +245,18 @@ async function takePictureWithRamping(analyse) {
                     currentStep++;
                     console.log("Brightness Step got increased.");
                 }
+                console.log('path: '+ path+' buffer: ' + CONFIGS[currentStep][0] + ' iso: ' + CONFIGS[currentStep][1] + ' brightness: ' + brightness + ' reference: ' + reference);
+                fs.readFile(path, function(err, data){
+                    global.socket.emit('image', { 
+                        image: true,
+                        buffer: data,
+                        shutterSpeed: CONFIGS[currentStep][0],
+                        iso: CONFIGS[currentStep][1],
+                        brightness: currentBrightness,
+                        reference: reference
+                    });
+                    if(err) console.log(err);
+                });
             }
         } catch (er) {
             console.log(er);
@@ -295,7 +311,7 @@ function takePictureAndDownload(keep) {
                 fs.writeFileSync(path, data);
                 resolve(path);
             });
-        } else resolve('/');
+        } else resolve('./imagesTaken/image.png');
     });
 }
 
@@ -313,7 +329,7 @@ function getShutterSpeed() {
                 reject(new Error("Could not get shutterSpeed"))
             });
         }
-        if (devMode) resolve('1/4');
+        if (devMode) resolve(1);
     });
 }
 
@@ -331,7 +347,7 @@ function getIso() {
                 reject(new Error("Could not get iso"))
             });
         }
-        if (devMode) resolve('100');
+        if (devMode) resolve(100);
     });
 }
 

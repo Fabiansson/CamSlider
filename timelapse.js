@@ -75,15 +75,15 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
 
         await timeToMove;
         await move;
-
-        if (cameraControl && ramping && (i % 5 == 0)) {
+        
+        if (cameraControl && !ramping && (i % 5 == 0)) {
             console.log("takePictureWithRamping true");
-            var camReady = camera.takePictureWithRamping(true);
-        } else if (cameraControl && ramping) {
+            var camReturn = camera.takePictureWithRamping(true);
+        } else if (cameraControl && !ramping) {
             console.log("takePictureWithRamping false");
-            var camReady = camera.takePictureWithRamping(false);
+            var camReturn = camera.takePictureWithRamping(false);
         } else if (cameraControl) {
-            var camReady = camera.takePicture();
+            var camReturn = camera.takePicture();
         }
 
         if (abort) {
@@ -95,10 +95,10 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
         }
 
         await sleep((interval - 2) * 1000);
-        if (cameraControl) await camReady
+        if (cameraControl) await camReturn;
 
         global.socket.emit('progress', {
-            value: i + 1,
+            step: i + 1,
             max: timelapseWaypoints.length
         })
     }

@@ -2,16 +2,24 @@ import React from 'react';
 import SocketContext from '../../services/SocketProvider';
 import TimelapseGraph from '../TimelapseGraph/TimelapseGraph';
 import Button from '@material-ui/core/Button';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
+import CameraPicture from '../CameraPicture/CameraPicture';
 
 class TimelapseRunning extends React.Component {
     constructor(props) {
         super(props);
         this.abort = this.abort.bind(this);
+        this.changeReference = this.changeReference.bind(this);
         
         this.state = {
             waypoints: undefined,
             startTime: undefined,
             endTime: undefined,
+            progress: 0,
+            shutterSpeed: undefined,
+            iso: undefined,
+            brightness: undefined,
+            reference: undefined
         };
     }
 
@@ -27,7 +35,16 @@ class TimelapseRunning extends React.Component {
 
         this.props.socket.on('progress', (data) => {
             this.setState({
-                progress: data.value
+                progress: data.step
+            })
+        })
+
+        this.props.socket.on('image', (data) => {
+            this.setState({
+                shutterSpeed: data.shutterSpeed,
+                iso: data.iso,
+                brightness: data.brightness,
+                reference: data.reference
             })
         })
 
@@ -37,6 +54,8 @@ class TimelapseRunning extends React.Component {
 
     componentWillUnmount(){
         this.props.socket.removeAllListeners('timelapseInfoResponse');
+        this.props.socket.removeAllListeners('progress');
+        this.props.socket.removeAllListeners('image');
     }
 
     abort(){
@@ -49,7 +68,18 @@ class TimelapseRunning extends React.Component {
           i = "0" + i;
         }
         return i;
-      }
+    }
+
+    changeReference(value) {
+        console.log('change referennce by: ' + value);
+        this.props.socket.emit('changeReference', {
+            value: value
+        });
+        
+        this.setState({
+            reference: this.state.reference + value
+        });
+    }
 
     render() {
         const abortButtonStyle = {
@@ -62,22 +92,39 @@ class TimelapseRunning extends React.Component {
                 position: 'absolute',
                 left: '1em',
                 top: '2.5em'
-          }
+        }
+        const referenceButtonStyle = {
+
+        }
+
           const remainingTime = new Date(new Date(this.state.endTime) - new Date());
           const h = this.addZero(remainingTime.getUTCHours());
           const m = this.addZero(remainingTime.getUTCMinutes());
           const s = this.addZero(remainingTime.getUTCSeconds());
           
         return (<div >
-            {this.state.waypoints !== undefined &&
+            {/*this.state.waypoints !== undefined &&
                 <TimelapseGraph waypoints={this.state.waypoints}/>
-            }
-            <p><span>Start Time: {new Date(this.state.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
-            <span>Aprox. End Time: {new Date(this.state.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
-            <span>Remaining Time: {h}:{m}:{s}</span>
+            */}
+            <p><span>Start: {new Date(this.state.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
+            <span>Aprox. End: {new Date(this.state.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
+            <span>Remaining: {h}:{m}:{s}</span>
             </p>
+            <p>Pictures: {this.state.progress}/{this.state.waypoints ? this.state.waypoints.length : '?'}</p>
+            {this.state.shutterSpeed && this.state.iso && this.state.brightness && this.state.reference &&
+                <div>
+                    <CameraPicture />
+                    <p>Shutter-Speed: {this.state.shutterSpeed}<br/>Iso: {this.state.iso}</p>
+                    <p>Brightness Value: {this.state.brightness}<br/>Reference Brightness: {this.state.reference}</p>
+                    <ButtonGroup size="small" color="primary" aria-label="outlined primary button group">
+                        <Button color="primary" variant="outlined" onClick={() => this.changeReference(1000)}>Brighten Reference</Button>
+                        <Button color="primary" onClick={() => this.changeReference(-1000)}>Darken Reference</Button>
+                    </ButtonGroup>      
+                </div>
+            }
+
             
-            <Button style={abortButtonStyle} color="secondary" variant="outlined" onClick={this.abort} >Abort</Button>
+            <Button style={abortButtonStyle} variant="outlined" onClick={this.abort} >Abort</Button>
             
             
         </div>
