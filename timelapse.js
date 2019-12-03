@@ -75,11 +75,11 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
 
         await timeToMove;
         await move;
-        
-        if (cameraControl && !ramping && (i % 5 == 0)) {
+
+        if (cameraControl && ramping && (i % 5 == 0)) {
             console.log("takePictureWithRamping true");
             var camReturn = camera.takePictureWithRamping(true);
-        } else if (cameraControl && !ramping) {
+        } else if (cameraControl && ramping) {
             console.log("takePictureWithRamping false");
             var camReturn = camera.takePictureWithRamping(false);
         } else if (cameraControl) {
