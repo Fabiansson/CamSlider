@@ -36,7 +36,7 @@ function Header(props){
             {props.title}
           </Typography>
           {props.toggleCamera !== undefined &&
-            <CameraBox cameraActive={props.cameraActive} hasCamera={props.hasCamera} toggleCamera={props.toggleCamera}/>
+            <CameraBox cameraActive={props.cameraActive} toggleCamera={props.toggleCamera}/>
           }
         </Toolbar>
       </AppBar>

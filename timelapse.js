@@ -1,11 +1,13 @@
 var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
-
 var positions = [];
 var running = null;
 var abort = false;
 
 var timelapseWaypoints;
+
+var startTime = null;
+var endTime = null;
 
 var socket;
 
@@ -35,7 +37,9 @@ function initSocket(socket){
     //for timelapse
     socket.on('timelapseInfo', function(){
         socket.emit('timelapseInfoResponse', {
-            waypoints: timelapseWaypoints
+            waypoints: timelapseWaypoints,
+            startTime: startTime,
+            endTime: endTime
         })
     })
 
@@ -54,7 +58,12 @@ function initSocket(socket){
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
     console.log('PLAN STARTING!');
+    startTime = new Date();
+    endTime = new Date();
+    endTime.setSeconds(endTime.getSeconds() + (movieTime * interval * 25));
+
     running = 'timelapse';
+    abort = false;
     var amountPauses = (movieTime * 25);
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
     console.log(timelapseWaypoints);
@@ -69,12 +78,12 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
 
         if (cameraControl && ramping && (i % 5 == 0)) {
             console.log("takePictureWithRamping true");
-            var camReady = camera.takePictureWithRamping(true);
+            var camReturn = camera.takePictureWithRamping(true);
         } else if (cameraControl && ramping) {
             console.log("takePictureWithRamping false");
-            var camReady = camera.takePictureWithRamping(false);
+            var camReturn = camera.takePictureWithRamping(false);
         } else if (cameraControl) {
-            var camReady = camera.takePicture();
+            var camReturn = camera.takePicture();
         }
 
         if (abort) {
@@ -86,10 +95,10 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
         }
 
         await sleep((interval - 2) * 1000);
-        if (cameraControl) await camReady
+        if (cameraControl) await camReturn;
 
         global.socket.emit('progress', {
-            value: i + 1,
+            step: i + 1,
             max: timelapseWaypoints.length
         })
     }
@@ -144,6 +153,8 @@ function generateWaypopints(points, n) {
 }
 
 function softReset() {
+    startTime = null;
+    endTime = null;
     positions = [];
     timelapseWaypoints = [];
     abort = false;

@@ -31,15 +31,15 @@ class Menu extends React.Component {
         return(
             <div>
             <div>
-            <Button style={buttonStyle} variant="contained" size="large" color="primary" component={Link} to="/timelapse">Timelapse 
+            <Button style={buttonStyle} variant="contained" size="large" color="primary" component={Link} to="/timelapse">Timelapse&nbsp;
             <TimelapseIcon /></Button>
             </div>
             <div>
-            <Button style={buttonStyle} variant="contained" size="large" color="primary" component={Link} to="/panorama">Panorama 
+            <Button style={buttonStyle} variant="contained" size="large" color="primary" component={Link} to="/panorama">Panorama&nbsp;
             <PanoramaHorizontalIcon /></Button>
             </div>
             <div>
-            <Button style={buttonStyle} variant="contained" size="large" color="primary" onClick={() => this.props.socket.emit('init')} component={Link} to="/movie">Movie 
+            <Button style={buttonStyle} variant="contained" size="large" color="primary" onClick={() => this.props.socket.emit('init')} component={Link} to="/movie">Movie&nbsp;
             <MovieIcon /></Button>
             </div>
             <Button variant="outlined" onClick={() => this.props.socket.emit('shutdown')} >

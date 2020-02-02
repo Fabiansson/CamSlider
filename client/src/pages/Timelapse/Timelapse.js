@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import { Link } from 'react-router-dom'
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { withSnackbar } from 'notistack';
 
 import './Timelapse.css';
 
@@ -56,6 +57,7 @@ class Timelapse extends React.Component {
                 cameraActive: data.hasCamera,
                 hasCamera: data.hasCamera
             })
+            if (!data.hasCamera) this.props.enqueueSnackbar('No camera connected.');
         });
     }
 
@@ -159,9 +161,6 @@ class Timelapse extends React.Component {
                 cameraActive={
                     this.state.cameraActive
                 }
-                hasCamera={
-                    this.state.hasCamera
-                }
                 toggleCamera={
                     this.toggleCamera
                 }
@@ -238,4 +237,4 @@ const TimelapseWithSocket = (props) => (
       {socket => <Timelapse {...props} socket={socket} />}
     </SocketContext.Consumer>
 )
-export default TimelapseWithSocket;
+export default withSnackbar(TimelapseWithSocket);
