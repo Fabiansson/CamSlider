@@ -77,7 +77,7 @@ class TimelapseRunning extends React.Component {
         });
         
         this.setState({
-            reference: this.state.reference + value
+            reference: Number(this.state.reference) + Number(value)
         });
     }
 

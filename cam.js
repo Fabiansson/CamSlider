@@ -62,7 +62,8 @@ function initSocket(socket) {
     })
 
     socket.on('changeReference', function(data) {
-        reference = reference + data.value;
+        reference = reference + Number(data.value);
+        console.log('Changed reference to: ' + reference);
     })
 
     socket.on('takeReferencePicture', async () => {
