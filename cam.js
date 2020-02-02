@@ -62,7 +62,7 @@ function initSocket(socket) {
     })
 
     socket.on('changeReference', function(data) {
-        reference = reference + Number(data.value);
+        reference = Number(reference) + Number(data.value);
         console.log('Changed reference to: ' + reference);
     })
 
@@ -390,7 +390,7 @@ function analyseImage(path) {
 
                 }
                 console.log('Brightness: ' + output);
-                resolve(output)
+                resolve(Number(output));
             });
         } else resolve(30000);
     });
