@@ -29,7 +29,7 @@ class CameraPicture extends React.Component {
 
     render() {
         return (<div >
-            <img id="img" alt="Recording after analysis will show here" src={this.state.imageSource} width="90%"></img>
+            <img id="img" alt="Recording after analysis will show here" src={this.state.imageSource} width="80%" maxHeight="250px"></img>
             
         </div>
         );

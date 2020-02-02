@@ -101,6 +101,9 @@ class TimelapseRunning extends React.Component {
           const h = this.addZero(remainingTime.getUTCHours());
           const m = this.addZero(remainingTime.getUTCMinutes());
           const s = this.addZero(remainingTime.getUTCSeconds());
+          console.log('Start time: ' + this.state.startTime);
+          console.log('End time: ' + this.state.endTime);
+          console.log('Remaining time: ' + remainingTime);
           
         return (<div >
             {/*this.state.waypoints !== undefined &&
