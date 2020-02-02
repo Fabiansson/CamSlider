@@ -7,6 +7,6 @@
     {
         "name": "Sony",
         "shutterSpeedOptions": [10,20,30,40,50,60],
-        "isoOptions": [50,100,500,20000]
+        "isoOptions": [50,100,500,1000,20000]
     }
 ]
