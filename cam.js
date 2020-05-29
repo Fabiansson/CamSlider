@@ -210,7 +210,7 @@ function takeReferencePicture() {
             currentBrightness = brightness;
             reference = brightness;
             console.log("Reference IS: " + reference);
-            await resetCamera();
+            //          await resetCamera();
             //await sleep(2000);
             //         var iso = await getIso();
             //await sleep(2000);
