@@ -397,6 +397,7 @@ function analyseImage(path) {
 }
 
 function searchConfig(shutterSpeed, iso) {
+    console.log('WE ARE SEARCHING CONFIG WITH SHUTTERSPEED: ' + shutterSpeed + 'AND' + iso);
     var step = null;
     for (var i = 0; i < CONFIGS.length; i++) {
         if (CONFIGS[i][0] == shutterSpeed && CONFIGS[i][1] == iso) {
@@ -405,6 +406,7 @@ function searchConfig(shutterSpeed, iso) {
             break;
         }
     }
+    console.log(step);
     return step;
 }
 
