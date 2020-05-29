@@ -300,7 +300,7 @@ function takePictureAndDownload(keep) {
         if (!devMode) {
             camera.takePicture({
                 download: true,
-                keep: keep
+                //keep: keep
             }, function (er, data) {
                 if (er) reject(er);
                 if (!fs.existsSync(imagesPath)) {
