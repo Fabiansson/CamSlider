@@ -309,7 +309,7 @@ function takePictureAndDownload(keep) {
                         recursive: true
                     });
                 }
-                var path = imagesPath + '/' + shotTime;
+                var path = imagesPath + '/' + shotTime + '.JPG';
                 fs.writeFileSync(path, data);
                 resolve(path);
             });
