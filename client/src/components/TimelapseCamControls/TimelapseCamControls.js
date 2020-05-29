@@ -122,8 +122,8 @@ class TimelapseCamControls extends React.Component {
     genereateRampingConfig() {
         var minIso = parseFloat(this.state.minIso);
         var maxIso = parseFloat(this.state.maxIso);
-        var minShutterSpeed = parseFloat(this.state.minShutterSpeed);
-        var maxShutterSpeed = parseFloat(this.state.maxShutterSpeed);
+        var minShutterSpeed = this.state.minShutterSpeed;
+        var maxShutterSpeed = this.state.maxShutterSpeed;
 
         console.log('MinISO: ' + minIso + ' MaxISO: ' + maxIso + ' MinShutterSpeed: ' + minShutterSpeed + ' MaxShutterSpeed: ' + maxShutterSpeed);
         if (minIso <= maxIso && minShutterSpeed <= maxShutterSpeed) {

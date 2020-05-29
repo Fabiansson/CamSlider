@@ -423,9 +423,13 @@ function generateRampingConfig(camera, minIso, maxIso, minShutterSpeed, maxShutt
     console.log('index of maxI: ' + isoOptions.indexOf(parseInt(maxIso)));
     console.log('index of mS: ' + shutterSpeedOptions.indexOf(minShutterSpeed));
     console.log('index of maxS: ' + shutterSpeedOptions.indexOf(maxShutterSpeed));
+    console.log('minshutterSpeed: ' + minShutterSpeed);
+    console.log('minshutterSpeedString: ' + minShutterSpeed.toString());
+    console.log('maxshutterSpeed: ' + maxShutterSpeed);
+
     var options = [];
     var newIsoOptions = isoOptions.slice(isoOptions.indexOf(parseInt(minIso)), isoOptions.indexOf(parseInt(maxIso)) + 1);
-    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(minShutterSpeed), shutterSpeedOptions.indexOf(maxShutterSpeed) + 1);
+    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(minShutterSpeed.toString()), shutterSpeedOptions.indexOf(maxShutterSpeed.toString()) + 1);
     console.log(newIsoOptions);
     console.log(newShutterSpeedOptions);
 
