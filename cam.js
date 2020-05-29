@@ -323,7 +323,7 @@ function getShutterSpeed() {
 
             ls.stdout.on('data', (data) => {
                 var shutterspeed = data.toString().split('\n')[3].split(' ')[1];
-                resolve(parseFloat(shutterspeed));
+                resolve(shutterspeed);
             });
 
             ls.stderr.on('data', (data) => {
@@ -421,11 +421,11 @@ function generateRampingConfig(camera, minIso, maxIso, minShutterSpeed, maxShutt
     console.log('isoOptions: ' + isoOptions);
     console.log('index of mI: ' + isoOptions.indexOf(parseInt(minIso)));
     console.log('index of maxI: ' + isoOptions.indexOf(parseInt(maxIso)));
-    console.log('index of mS: ' + shutterSpeedOptions.indexOf(parseFloat(minShutterSpeed)));
-    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(parseFloat(maxShutterSpeed)));
+    console.log('index of mS: ' + shutterSpeedOptions.indexOf(minShutterSpeed));
+    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(maxShutterSpeed));
     var options = [];
     var newIsoOptions = isoOptions.slice(isoOptions.indexOf(parseInt(minIso)), isoOptions.indexOf(parseInt(maxIso)) + 1);
-    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(parseFloat(minShutterSpeed)), shutterSpeedOptions.indexOf(parseFloat(maxShutterSpeed)) + 1);
+    var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(minShutterSpeed), shutterSpeedOptions.indexOf(maxShutterSpeed) + 1);
     console.log(newIsoOptions);
     console.log(newShutterSpeedOptions);
 
@@ -471,7 +471,7 @@ function getShutterSpeedOptions() {
                     if (lines[i].startsWith('Choice:')) {
                         var shutterspeed = lines[i].split(' ')[2];
                         //if (shutterspeed == '5') break;
-                        if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(parseFloat(shutterspeed));
+                        if (shutterspeed != 'Time' && shutterspeed != 'Bulb') shutterSpeedOptions.push(shutterspeed);
                     }
                 }
                 if (shutterSpeedOptions[0] == 30) {
