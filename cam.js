@@ -71,7 +71,8 @@ function initSocket(socket) {
         try {
             var iso = await getIso();
             var shutterSpeed = await getShutterSpeed();
-            if (searchConfig(shutterSpeed, iso) != null) {
+            currentStep = searchConfig(shutterSpeed, iso);
+            if (currentStep != null) {
                 await takeReferencePicture();
                 socket.emit('takingReferencePictureDone', {
                     success: true
@@ -211,11 +212,11 @@ function takeReferencePicture() {
             console.log("Reference IS: " + reference);
             await resetCamera();
             //await sleep(2000);
-            var iso = await getIso();
+            //         var iso = await getIso();
             //await sleep(2000);
-            var shutterSpeed = await getShutterSpeed();
-            currentStep = searchConfig(shutterSpeed, iso);
-            console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
+            //          var shutterSpeed = await getShutterSpeed();
+            //          currentStep = searchConfig(shutterSpeed, iso);
+            //            console.log("Iso: " + iso + " Shutterspeed: " + shutterSpeed + " current step: " + currentStep);
             resolve();
         } catch (er) {
             reject(er);
