@@ -278,13 +278,14 @@ async function takePictureWithHdr() {
             reject(new Error('Taking picture with HDR failed'));
         }
     });
-}
+}g
 
 function takePictureAndDownload() {
     return new Promise(function (resolve, reject) {
         if (!devMode) {
             var captureTime = getTime(false);
             var path = '/home/pi/CamSlider/imagesTaken/' + folder_name + '/' + captureTime;
+            console.log(path);
             const ls = spawn('gphoto2', ['--capture-image-and-download', '--filename=/home/pi/CamSlider/imagesTaken/' + folder_name + '/' + captureTime + '.%C']);
 
             ls.stdout.on('data', (data) => {
