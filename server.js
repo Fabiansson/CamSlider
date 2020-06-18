@@ -62,7 +62,7 @@ io.on('connection', function (socket) {
     if (process.env.NODE_ENV != 'development') {
         socket.on('time', function (data) {
             const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAI', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEZ'];
-            var setTimeCommand = 'date -s "' + data.day + " " + months[data.month] + " " + data.year + " " + data.hour + ":" + data.minutes + ":" + data.seconds + '"';
+            var setTimeCommand = 'sudo date -s "' + data.day + " " + months[data.month] + " " + data.year + " " + data.hour + ":" + data.minutes + ":" + data.seconds + '"';
             exec(setTimeCommand, function (error, stdout, stderr) {
                 console.log('Set time to ' + setTimeCommand);
                 if (error) console.log(error);

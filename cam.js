@@ -27,8 +27,9 @@ function initSocket(socket) {
     socket = socket;
 
     socket.on('requestCamera', function () {
+        let hasCamera = hasCamera();
         socket.emit('hasCamera', {
-            hasCamera: camera != null
+            hasCamera: hasCamera
         })
     })
 
@@ -91,8 +92,9 @@ function initSocket(socket) {
 
 killProcess()
     //.then(resetCamera()
-        .then(success => {
+        .then(() => {
             console.log('Camera conected: ' + success);
+
         }).catch(er => {
             console.log(er.message);
         })/*)
@@ -103,13 +105,13 @@ killProcess()
 usb.on('attach', async function (device) {
     await sleep(5000);
     if (!devMode) {
-        if (isCamera(device)) {
+        if (hasCamera()) {
             await killProcess();
             await sleep(1000);
-            camera = device;
+            //camera = device;
             const ls = spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
             global.socket.emit('hasCamera', {
-                hasCamera: camera != null
+                hasCamera: true
             })
             console.log('Found camera');
         }
@@ -117,10 +119,10 @@ usb.on('attach', async function (device) {
 });
 
 usb.on('detach', function (device) {
-    if (isCamera(device)) {
-        camera = null;
+    if (!hasCamera()) {
+        //camera = null;
         global.socket.emit('hasCamera', {
-            hasCamera: camera != null
+            hasCamera: false
         })
         console.log('Camera disconected');
     }
@@ -548,6 +550,7 @@ function getFolderName() {
 };
 //////////////////////////////
 
+////////////////////DEPRICATED/////////////////////////
 function getUsbDevice() {
     return new Promise(function (resolve, reject) {
         var devices = usb.getDeviceList();
@@ -567,14 +570,26 @@ function getUsbDevice() {
         reject(new Error("Could not get USB ID"));
     });
 }
-
+////////////////////////////////////////////
+////////DEPRICATED///////////
 function isCamera(device) {
     var idVendor = device.idVendor;
     return (idVendor != 1060 && idVendor != 7531 && idVendor != 6790);
 }
+//////////////////////////////
 
 function hasCamera() {
-    return (camera != null);
+    var devices = usb.getDeviceList();
+
+    for (var i = 0; i < devices.length; i++) {
+        var idVendor = devices[i]['deviceDescriptor']['idVendor'];
+        var idProduct = devices[i]['deviceDescriptor']['idProduct'];
+
+        if (idVendor != 1060 && idVendor != 7531 && idVendor != 6790) {
+            return true;
+        }
+    }
+    return false;
 }
 
 module.exports = {
@@ -582,6 +597,5 @@ module.exports = {
     takeReferencePicture,
     takePictureWithRamping,
     takePictureWithHdr,
-    hasCamera,
     initSocket
 }
