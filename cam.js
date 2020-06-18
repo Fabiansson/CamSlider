@@ -28,6 +28,7 @@ function initSocket(socket) {
 
     socket.on('requestCamera', function () {
         let hasCamera = hasCamera();
+        console.log('hasCamera: ' + hasCamera);
         socket.emit('hasCamera', {
             hasCamera: hasCamera
         })
