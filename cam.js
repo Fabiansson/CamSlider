@@ -126,8 +126,7 @@ usb.on('detach', function (device) {
     }
 });
 
-/////////////////////DEPRICATED///////////////////////
-/*function killProcess() {
+function killProcess() {
     return new Promise(async function (resolve, reject) {
         await sleep(5000);
         const ls = spawn('pgrep', ['gvfsd-gphoto2']);
@@ -145,8 +144,7 @@ usb.on('detach', function (device) {
             resolve();
         });
     })
-}*/
-//////////////////////////////////////////////////
+}
 //////////////DEPRICATED/////////////////
 /*function resetCamera() {
     return new Promise(async (resolve, reject) => {
