@@ -1,5 +1,6 @@
 var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
+var { sleep } = require('./helpers');
 var positions = [];
 var running = null;
 var abort = false;
@@ -83,7 +84,7 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
             console.log("takePictureWithRamping false");
             var camReturn = camera.takePictureWithRamping(false);
         } else if (cameraControl) {
-            var camReturn = camera.takePicture();
+            var camReturn = camera.takePictureAndDownload();
         }
 
         if (abort) {
@@ -104,10 +105,6 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     }
     running = null;
     console.log('Timelapse done!');
-}
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function getDistance(point1, point2) {
