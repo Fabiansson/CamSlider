@@ -93,8 +93,7 @@ function initSocket(socket) {
 killProcess()
     //.then(resetCamera()
         .then(() => {
-            console.log('Camera conected: ' + success);
-
+            console.log('GPhoto ready');
         }).catch(er => {
             console.log(er.message);
         })/*)
