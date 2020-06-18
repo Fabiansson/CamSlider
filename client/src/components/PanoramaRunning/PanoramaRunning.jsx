@@ -2,17 +2,24 @@ import React from 'react';
 import SocketContext from '../../services/SocketProvider';
 import PanoramaGraph from '../../components/PanoramaGraph/PanoramaGraph';
 import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import { withSnackbar } from 'notistack';
 
 class PanoramaRunning extends React.Component {
     constructor(props) {
         super(props);
         this.togglePause = this.togglePause.bind(this);
-        this.abort = this.abort.bind(this);
+        this.openDialog = this.openDialog.bind(this);
+        this.handleYes = this.handleYes.bind(this);
+        this.handleNo = this.handleNo.bind(this);
         
         this.state = {
             panoConfig: undefined,
-            pause: false
+            pause: false,
+            open: false,
+            task: ''
         };
     }
 
@@ -45,12 +52,22 @@ class PanoramaRunning extends React.Component {
         })
     }
 
-    abort(){
-        this.props.socket.emit('abort');
-        window.location.href = '/panorama';
+    openDialog(task) {
+        this.setState({
+            open: true,
+            task: task
+        });
     }
 
+    handleYes() {
+        this.setState({open: !this.state.open})
+        this.props.socket.emit(this.state.task);
+        window.location.href = '/';
+    }
 
+    handleNo() {
+        this.setState({open: !this.state.open});
+    }
 
     render() {
         const abortButtonStyle = {
@@ -66,13 +83,20 @@ class PanoramaRunning extends React.Component {
           }
         
         return (<div >
+            <Dialog open={this.state.open} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+                <DialogTitle id="alert-dialog-title">{"Do you really want to " + this.state.task + "?"}</DialogTitle>
+                <DialogActions>
+                    <Button onClick={this.handleNo} color="primary">No</Button>
+                    <Button onClick={this.handleYes} color="primary" autoFocus>Yes</Button>
+                </DialogActions>
+            </Dialog>
             {this.state.panoConfig !== undefined &&
             <div>
                 <PanoramaGraph config={this.state.panoConfig}/>
                 <Button variant="outlined" onClick={this.togglePause}>{this.state.pause ? 'Resume' : 'Pause'}</Button>
             </div>
             }
-            <Button style={abortButtonStyle} color="secondary" variant="outlined" onClick={this.abort} >Abort</Button>
+            <Button style={abortButtonStyle} color="secondary" variant="outlined" onClick={() => this.openDialog('abort')} >Abort</Button>
             
             
         </div>

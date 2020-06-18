@@ -1,15 +1,19 @@
 import React from 'react';
 import SocketContext from '../../services/SocketProvider';
-import TimelapseGraph from '../TimelapseGraph/TimelapseGraph';
 import Button from '@material-ui/core/Button';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import CameraPicture from '../CameraPicture/CameraPicture';
 
 class TimelapseRunning extends React.Component {
     constructor(props) {
         super(props);
-        this.abort = this.abort.bind(this);
         this.changeReference = this.changeReference.bind(this);
+        this.openDialog = this.openDialog.bind(this);
+        this.handleYes = this.handleYes.bind(this);
+        this.handleNo = this.handleNo.bind(this);
         
         this.state = {
             waypoints: undefined,
@@ -19,7 +23,9 @@ class TimelapseRunning extends React.Component {
             shutterSpeed: undefined,
             iso: undefined,
             brightness: undefined,
-            reference: undefined
+            reference: undefined,
+            open: false,
+            task: ''
         };
     }
 
@@ -58,11 +64,6 @@ class TimelapseRunning extends React.Component {
         this.props.socket.removeAllListeners('image');
     }
 
-    abort(){
-        this.props.socket.emit('abort');
-        window.location.href = '/';
-    }
-
     addZero(i) {
         if (i < 10) {
           i = "0" + i;
@@ -81,6 +82,23 @@ class TimelapseRunning extends React.Component {
         });
     }
 
+    openDialog(task) {
+        this.setState({
+            open: true,
+            task: task
+        });
+    }
+
+    handleYes() {
+        this.setState({open: !this.state.open})
+        this.props.socket.emit(this.state.task);
+        window.location.href = '/';
+    }
+
+    handleNo() {
+        this.setState({open: !this.state.open});
+    }
+
     render() {
         const abortButtonStyle = {
                 border: 0,
@@ -93,9 +111,6 @@ class TimelapseRunning extends React.Component {
                 left: '1em',
                 top: '2.5em'
         }
-        const referenceButtonStyle = {
-
-        }
 
           const remainingTime = new Date(new Date(this.state.endTime) - new Date());
           const h = this.addZero(remainingTime.getUTCHours());
@@ -105,10 +120,14 @@ class TimelapseRunning extends React.Component {
           console.log('End time: ' + this.state.endTime);
           console.log('Remaining time: ' + remainingTime);
           
-        return (<div >
-            {/*this.state.waypoints !== undefined &&
-                <TimelapseGraph waypoints={this.state.waypoints}/>
-            */}
+        return (<div>
+            <Dialog open={this.state.open} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+                <DialogTitle id="alert-dialog-title">{"Do you really want to " + this.state.task + "?"}</DialogTitle>
+                <DialogActions>
+                    <Button onClick={this.handleNo} color="primary">No</Button>
+                    <Button onClick={this.handleYes} color="primary" autoFocus>Yes</Button>
+                </DialogActions>
+            </Dialog>
             <p><span>Start: {new Date(this.state.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
             <span>Aprox. End: {new Date(this.state.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span><br/>
             <span>Remaining: {h}:{m}:{s}</span>
@@ -127,7 +146,7 @@ class TimelapseRunning extends React.Component {
             }
 
             
-            <Button style={abortButtonStyle} variant="outlined" onClick={this.abort} >Abort</Button>
+            <Button style={abortButtonStyle} variant="outlined" onClick={() => this.openDialog('abort')} >Abort</Button>
             
             
         </div>
