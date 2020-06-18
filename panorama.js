@@ -1,5 +1,6 @@
 var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
+var { sleep } = require('./helpers');
 
 var running = null;
 var pause = false;
@@ -135,7 +136,7 @@ async function makePanoStep(index) {
             }
         } else if (panoCamControl && !panoHdr) {
             await sleep(500);
-            await camera.takePicture();
+            await camera.takePictureAndDownload();
             await sleep(500);
         }
 
@@ -151,10 +152,6 @@ async function makePanoStep(index) {
 
         resolve();
     });
-}
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function generatePanoPoints(panoConfig) {
