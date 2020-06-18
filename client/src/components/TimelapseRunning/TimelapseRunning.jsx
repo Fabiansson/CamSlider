@@ -60,7 +60,7 @@ class TimelapseRunning extends React.Component {
 
     abort(){
         this.props.socket.emit('abort');
-        window.location.href = '/timelapse';
+        window.location.href = '/';
     }
 
     addZero(i) {

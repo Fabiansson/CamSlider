@@ -91,7 +91,6 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
             console.log("Timelapse aborted!");
             await motor.driveToPosition([0, 0, 0]);
             softReset();
-            global.socket.emit('initDone');
             return;
         }
 
@@ -103,7 +102,8 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
             max: timelapseWaypoints.length
         })
     }
-    running = null;
+    await motor.driveToPosition([0, 0, 0]);
+    softReset();
     console.log('Timelapse done!');
 }
 
