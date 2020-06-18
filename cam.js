@@ -573,6 +573,11 @@ function getUsbDevice() {
     });
 }
 
+function isCamera(device) {
+    var idVendor = device.idVendor;
+    return (idVendor != 1060 && idVendor != 7531 && idVendor != 6790);
+}
+
 function hasCamera() {
     return (camera != null);
 }
