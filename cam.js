@@ -278,7 +278,7 @@ async function takePictureWithHdr() {
             reject(new Error('Taking picture with HDR failed'));
         }
     });
-}g
+}
 
 function takePictureAndDownload() {
     return new Promise(function (resolve, reject) {
