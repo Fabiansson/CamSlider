@@ -578,7 +578,6 @@ function hasCamera() {
 }
 
 module.exports = {
-    takePicture,
     takePictureAndDownload,
     takeReferencePicture,
     takePictureWithRamping,
