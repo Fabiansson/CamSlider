@@ -89,27 +89,23 @@ function initSocket(socket) {
 
 }
 
-////////////DEPRICATED/////////////////
-/*killProcess()
-    .then(resetCamera()
+killProcess()
+    //.then(resetCamera()
         .then(success => {
             console.log('Camera conected: ' + success);
         }).catch(er => {
             console.log(er.message);
-        }))
+        })/*)
     .catch(er => {
         console.log(er.message);
     });*/
-//////////////////////////////
 
 usb.on('attach', async function (device) {
     await sleep(5000);
     if (!devMode) {
         if (isCamera(device)) {
-            ///////DEPRICATED///////
-            //await killProcess();
-            //await sleep(1000);
-            ///////////////////////
+            await killProcess();
+            await sleep(1000);
             camera = device;
             const ls = spawn('gphoto2', ['--set-config'], ['capturetarget=1']);
             global.socket.emit('hasCamera', {
