@@ -178,7 +178,7 @@ function killProcess() {
 function takeReferencePicture() {
     return new Promise(async (resolve, reject) => {
         try {
-            lastImage = await takePictureAndDownload(folder_name);;
+            lastImage = await takePictureAndDownload();;
             var brightness = await analyseImage(lastImage);
             currentBrightness = brightness;
             reference = brightness;
@@ -200,7 +200,7 @@ async function takePictureWithRamping(analyse) {
             await setIso(CONFIGS[currentStep][1]);
 
             console.log("await takepictureanddownload");
-            lastImage = await takePictureAndDownload(folder_name);
+            lastImage = await takePictureAndDownload();
             resolve();
             if (analyse) {
                 var brightness = await analyseImage(lastImage);
@@ -235,17 +235,17 @@ async function takePictureWithRamping(analyse) {
 async function takePictureWithHdr() {
     return new Promise(async (resolve, reject) => {
         try {
-            await takePictureAndDownload(folder_name);
+            await takePictureAndDownload();
             //await resetCamera();
             var shutterSpeed = await getShutterSpeed();
             var iso = await getIso();
             var step = searchConfig(shutterSpeed, iso);
             if (step != null && (CONFIGS.length > step + 3) && (step - 3 > 0)) {
                 await Promise.all([setShutterSpeed(CONFIGS[step + 3][0]), setIso(CONFIGS[step + 3][1])]);
-                await takePictureAndDownload(folder_name);
+                await takePictureAndDownload();
                 await setShutterSpeed(CONFIGS[step - 3][0]);
                 await setIso(CONFIGS[step - 3][1]);
-                await takePictureAndDownload(folder_name);
+                await takePictureAndDownload();
                 await setShutterSpeed(CONFIGS[step][0]);
                 await setIso(CONFIGS[step][1]);
                 resolve();
