@@ -580,6 +580,8 @@ function isCamera(device) {
 
 function hasCamera() {
     var devices = usb.getDeviceList();
+    console.log('HASCAMERA FUNCTION');
+    console.log(JSON.stringify(devices));
 
     for (var i = 0; i < devices.length; i++) {
         var idVendor = devices[i]['deviceDescriptor']['idVendor'];
@@ -589,6 +591,7 @@ function hasCamera() {
             return true;
         }
     }
+    console.log('About to return false');
     return false;
 }
 
