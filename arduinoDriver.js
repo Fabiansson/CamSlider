@@ -1,5 +1,6 @@
 var devMode = false;
 if(process.env.NODE_ENV == 'development') var devMode = true;
+let { logger } = require('./logger');
 const Firmata = require("firmata");
 var board;
 if (!devMode) {
@@ -47,7 +48,7 @@ function initSocket(socket) {
         y = await getPos(1);
         z = await getPos(2);
 
-        console.log("getPos" + x + " " + y + " " + z);
+        logger.info("Current position: " + x + " " + y + " " + z);
         await x;
         await y;
         await z;
@@ -60,7 +61,7 @@ function initSocket(socket) {
     })
 
     socket.on('waterscale', function () {
-        console.log('waterscale');
+        logger.info('Waterscaling now...');
         if (!devMode) board.accelStepperZero(0);
         if (!devMode) board.accelStepperZero(1);
         if (!devMode) board.accelStepperZero(2);
@@ -72,12 +73,12 @@ function initSocket(socket) {
     })
 
     socket.on('reposition', function (data) {
-        console.log("reposition on motor: " + data.axis + " in direction: " + data.direction);
+        logger.info("Repositioning motor: " + data.axis + " in direction: " + data.direction);
         reposition(data.axis, data.direction);
     });
 
     socket.on('stop reposition', function () {
-        console.log("stop reposition");
+        logger.info("Stop repositioning");
         stop();
     });
 
@@ -85,7 +86,7 @@ function initSocket(socket) {
 }
 
 if (!devMode) board.on("ready", () => {
-    console.log("Arduino ready");
+    logger.info("Arduino ready");
     board.accelStepperConfig(xMotor);
     board.accelStepperConfig(yMotor);
     board.accelStepperConfig(zMotor);
@@ -121,7 +122,7 @@ if (!devMode) board.on("ready", () => {
 
 async function initTimelapse() {
     return new Promise(async (resolve) => {
-        console.log("INIT TIMELAPSE");
+        logger.info("Preparing timelapse...");
         await driveToStart();
         resolve();
     })
@@ -159,7 +160,7 @@ function reposition(axis, dir) {
         } else {
             setDirLeft();
         }
-        console.log(dir + " " + deviceNumber + " " + shouldMove + " " + direction)
+        logger.info("Moving to: " + dir + " Motor: " + deviceNumber + " ShouldMove: " + shouldMove + " NummerDirection: " + direction)
 
         if (atEnd != 0 && !devMode) board.accelStepperStep(deviceNumber, direction * 100000);
     }
@@ -247,7 +248,7 @@ function releaseSwitch() {
         if (!devMode) {
             board.accelStepperStep(0, direction * 200, function () {
                 board.reportDigitalPin(13, 1);
-                console.log("released Switch");
+                logger.info("Releasing switch...");
                 resolve();
             });
         } else resolve();

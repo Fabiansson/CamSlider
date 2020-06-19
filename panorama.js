@@ -1,6 +1,7 @@
 var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
 var { sleep } = require('./helpers');
+var { logger } = require('./logger');
 
 var running = null;
 var pause = false;
@@ -49,7 +50,7 @@ function initSocket(socket) {
 
     socket.on('retakePanoPicture', function (data) {
         if (!busy) {
-            console.log('Retaking picture with index: ' + data.index);
+            logger.info('Retaking picture with index: ' + data.index);
             makePanoStep(data.index);
         } else {
             socket.emit('isBusy', {
@@ -73,7 +74,7 @@ function initSocket(socket) {
 
     //for panorama
     socket.on('panorama', function (data) {
-        console.log("Starting Pano Plan");
+        logger.info("Starting Pano Plan");
         currentPanoConfig = data.config;
         waypoints = generatePanoPoints(data.config);
         progress = Array(waypoints.length).fill(0);
@@ -81,7 +82,7 @@ function initSocket(socket) {
         panoInterval = data.interval
         panoCamControl = data.cameraControl
         panoHdr = data.hdr
-        console.log(data.config.toString() + " " + data.interval + " " + data.cameraControl + " " + data.hdr)
+        logger.info("Pano Configuration " + data.config.toString() + " Interval: " + data.interval + " CameraControl: " + data.cameraControl + " HDR: " + data.hdr);
         panorama(data.config);
     });
 
@@ -92,7 +93,7 @@ function initSocket(socket) {
 }
 
 async function panorama() {
-    console.log('PLAN STARTING!');
+    logger.info('Panorama plan starting...');
     running = 'panorama';
     abort = false;
 
@@ -100,7 +101,7 @@ async function panorama() {
 
     for (var i = 0; i < limit; i++) {
         if (abort) {
-            console.log("Pano aborted");
+            logger.info("Pano aborted.");
             await motor.driveToPosition([0, 0, 0]);
             softReset();
             return;
@@ -113,7 +114,7 @@ async function panorama() {
             return;
         }
         if (i == limit - 1) {
-            console.log('PANORAMA DONE');
+            logger.info('Panorama done!');
             running = null;
             softReset();
         }
@@ -124,7 +125,7 @@ async function panorama() {
 async function makePanoStep(index) {
     return new Promise(async function (resolve, reject) {
         busy = true;
-        console.log("Drive to " + waypoints[index]);
+        logger.info("Drive to " + waypoints[index]);
         await motor.driveToPosition(waypoints[index])
         await sleep(1000);
 
@@ -132,7 +133,7 @@ async function makePanoStep(index) {
             try {
                 await camera.takePictureWithHdr();
             } catch (error) {
-                console.log(error.message);
+                logger.error(error);
             }
         } else if (panoCamControl && !panoHdr) {
             await sleep(500);
@@ -144,7 +145,7 @@ async function makePanoStep(index) {
         busy = false;
 
         progress[index] = progress[index] + 1;
-        console.log(progress);
+        logger.info("Progress:%o", progress);
 
         global.socket.emit('progress', {
             progress: progress
@@ -167,7 +168,7 @@ function generatePanoPoints(panoConfig) {
         }
 
     }
-    console.log(waypoints);
+    logger.info("Panorama waypoints:%o", waypoints);
     return waypoints;
 }
 
