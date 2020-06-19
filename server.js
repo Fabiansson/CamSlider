@@ -31,6 +31,8 @@ var timelapse = require('./timelapse');
 var panorama = require('./panorama');
 var camera = require('./cam.js');
 
+global.mode = null;
+
 
 var host = process.env.HOST || '0.0.0.0';
 var port = process.env.PORT || 8000; //WARNING: app.listen(80) will NOT work here!
@@ -76,6 +78,16 @@ io.on('connection', function (socket) {
         })
     }
 
+    socket.on('resetStatus', function () {
+        global.mode = null;
+    })
+
+    socket.on('requestStatus', function () {
+        socket.emit('status', {
+            running: global.mode
+        })
+    })
+
     socket.on('update', function () {
         logger.info('Starting Update...');
         logger.info('Downloading new Software.');
@@ -107,7 +119,7 @@ io.on('connection', function (socket) {
         exec('reboot', function (error, stdout, stderr) { logger.info(stdout); });
     })
 
-    socket.on('restartServices', function() {
+    socket.on('restartServices', function () {
         exec('sudo systemctl restart slider.service', function (error, stdout, stderr) { logger.info(stdout); });
     })
 });

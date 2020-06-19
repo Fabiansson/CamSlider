@@ -7,6 +7,7 @@ import CameraBox from '../CameraBox/CameraBox';
 import { Link } from 'react-router-dom';
 import BackIcon from '@material-ui/icons/ArrowBack';
 import IconButton from '@material-ui/core/IconButton';
+import SocketContext from '../../services/SocketProvider';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -27,7 +28,7 @@ function Header(props){
       <AppBar position="static" color="default">
         <Toolbar>
         {props.backButton &&
-        <IconButton aria-label="back" component={ Link } to='/'>
+        <IconButton aria-label="back" component={ Link } onClick={() => props.socket.emit('resetStatus')} to='/'>
         <BackIcon />
       </IconButton>
             
@@ -47,4 +48,10 @@ function Header(props){
     
 }
 
-export default Header;
+const HeaderWithSocket = (props) => (
+  <SocketContext.Consumer>
+    {socket => <Header {...props} socket={socket} />}
+  </SocketContext.Consumer>
+)
+
+export default HeaderWithSocket;

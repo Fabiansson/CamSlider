@@ -3,7 +3,6 @@ var motor = require('./arduinoDriver');
 var { sleep } = require('./helpers');
 const { logger } = require('./logger.js');
 var positions = [];
-var running = null;
 var abort = false;
 
 var timelapseWaypoints;
@@ -16,15 +15,6 @@ var socket;
 function initSocket(socket){
     socket = socket;
 
-    //for panorama and timelepase
-    socket.on('requestStatus', function() {
-        if(running){
-            socket.emit('status', {
-                running: 'timelapse'
-            })
-        }
-    })
-
     //for timelapse
     socket.on('points', function(data){
         positions = data.points
@@ -33,7 +23,7 @@ function initSocket(socket){
     //for panorama and timelapse
     socket.on('abort', async function () {
         abort = true;
-        running = null;
+        global.mode = null;
     })
     
     //for timelapse
@@ -64,7 +54,7 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     endTime = new Date();
     endTime.setSeconds(endTime.getSeconds() + (movieTime * interval * 25));
 
-    running = 'timelapse';
+    global.mode = 'timelapse';
     abort = false;
     var amountPauses = (movieTime * 25);
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
@@ -156,7 +146,7 @@ function softReset() {
     positions = [];
     timelapseWaypoints = [];
     abort = false;
-    running = null;
+    global.mode = null;
 }
 
 module.exports = {

@@ -3,7 +3,6 @@ var motor = require('./arduinoDriver');
 var { sleep } = require('./helpers');
 var { logger } = require('./logger');
 
-var running = null;
 var pause = false;
 var busy = false;
 var abort = false;
@@ -21,15 +20,6 @@ var socket;
 
 function initSocket(socket) {
     socket = socket;
-
-    //for panorama and timelepase
-    socket.on('requestStatus', function () {
-        if (running) {
-            socket.emit('status', {
-                running: 'panorama'
-            })
-        }
-    })
 
     //for panorama
     socket.on('pause', function () {
@@ -62,7 +52,7 @@ function initSocket(socket) {
     //for panorama and timelapse
     socket.on('abort', async function () {
         abort = true;
-        running = null;
+        global.mode = null;
     })
 
     //for panorama
@@ -94,7 +84,7 @@ function initSocket(socket) {
 
 async function panorama() {
     logger.info('Panorama plan starting...');
-    running = 'panorama';
+    global.mode = 'panorama';
     abort = false;
 
     var limit = waypoints.length;
@@ -115,7 +105,6 @@ async function panorama() {
         }
         if (i == limit - 1) {
             logger.info('Panorama done!');
-            running = null;
             softReset();
         }
     }
@@ -176,7 +165,7 @@ function softReset() {
     pause = false;
     busy = false;
     abort = false;
-    running = null;
+    global.mode = null;
 
     currentPanoConfig = [];
 
