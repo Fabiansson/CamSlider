@@ -7,6 +7,7 @@ var exec = require('child_process').exec;
 const process = require('process');
 var path = require('path');
 const commands = require('./config');
+const { logger } = require('./logger');
 
 process.on('beforeExit', (code) => {
     console.log('Process beforeExit event with code: ', code);
@@ -35,23 +36,27 @@ var host = process.env.HOST || '0.0.0.0';
 var port = process.env.PORT || 8000; //WARNING: app.listen(80) will NOT work here!
 
 server.listen(port, host, function () {
-    console.log("Server running on: " + host + " : " + port);
-    console.log('ENV: ' + process.env.NODE_ENV);
-    console.log('VERSION: ' + process.env.REACT_APP_VERSION);
+    logger.info("Server running on: " + host + " : " + port);
+    logger.info('ENV: ' + process.env.NODE_ENV);
+    logger.info('VERSION: ' + process.env.REACT_APP_VERSION);
 });
 
 //Serving directory
 app.use(express.static(path.join(__dirname, 'client', 'build')));
 
-app.get('/*', function (req, res) {
+app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+
+app.get('/logs', function (req, res) {
+    res.sendFile(path.join(__dirname, 'combined.log'));
 });
 
 SegfaultHandler.registerHandler("crash.log");
 
 
 io.on('connection', function (socket) {
-    console.log("Hallo client");
+    logger.info("Client connected...");
 
     global.socket = socket;
     timelapse.initSocket(socket);
@@ -64,7 +69,7 @@ io.on('connection', function (socket) {
             const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAI', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEZ'];
             var setTimeCommand = 'sudo date -s "' + data.day + " " + months[data.month] + " " + data.year + " " + data.hour + ":" + data.minutes + ":" + data.seconds + '"';
             exec(setTimeCommand, function (error, stdout, stderr) {
-                console.log('Set time to ' + setTimeCommand);
+                logger.info('Set time to ' + setTimeCommand);
                 if (error) console.log(error);
             });
 
@@ -72,18 +77,18 @@ io.on('connection', function (socket) {
     }
 
     socket.on('update', function () {
-        console.log('Starting Update...');
-        console.log('Downloading new Software.');
+        logger.info('Starting Update...');
+        logger.info('Downloading new Software.');
         exec(commands.gitPull, function (error, stdout, stderr) {
-            console.log('Installing Server Files.');
+            logger.info('Installing Server Files.');
             exec(commands.serverInstall, function (error, stdout, stderr) {
-                console.log('Installing Client Files.');
+                logger.info('Installing Client Files.');
                 exec(commands.clientInstall, function (error, stdout, stderr) {
-                    console.log('Building Client.');
+                    logger.info('Building Client.');
                     exec(commands.clientBuild, function (error, stdout, stderr) {
-                        console.log('Updating done... restarting now...');
+                        logger.info('Updating done... restarting now...');
                         socket.emit('updateDone');
-                        exec('reboot', function (error, stdout, stderr) { console.log(stdout); });
+                        exec('reboot', function (error, stdout, stderr) { logger.info(stdout); });
                     })
                 })
             })
@@ -91,10 +96,10 @@ io.on('connection', function (socket) {
     })
 
     socket.on('shutdown', function () {
-        exec('shutdown now', function (error, stdout, stderr) { console.log(stdout); });
+        exec('shutdown now', function (error, stdout, stderr) { logger.info(stdout); });
     })
 
     socket.on('reboot', function () {
-        exec('reboot', function (error, stdout, stderr) { console.log(stdout); });
+        exec('reboot', function (error, stdout, stderr) { logger.info(stdout); });
     })
 });

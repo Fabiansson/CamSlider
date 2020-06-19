@@ -1,6 +1,7 @@
 var camera = require('./cam.js');
 var motor = require('./arduinoDriver');
 var { sleep } = require('./helpers');
+const { logger } = require('./logger.js');
 var positions = [];
 var running = null;
 var abort = false;
@@ -46,8 +47,8 @@ function initSocket(socket){
 
     //for timelapse
     socket.on('timelapse', function (data) {
-        console.log("Starting Plan");
-        console.log(data.interval + " " + data.movieTime + " " + data.cameraControl + " " + data.ramping);
+        logger.info("Starting timalapse plan...");
+        logger.info("Panorama Settings - Interval: " + data.interval + " movieTime: " + data.movieTime + " cameraControl: " + data.cameraControl + " ramping: " + data.ramping);
         timelapse(data.interval, data.movieTime, data.cameraControl, data.ramping);
     })
 
@@ -58,7 +59,7 @@ function initSocket(socket){
 }
 
 async function timelapse(interval, movieTime, cameraControl, ramping) {
-    console.log('PLAN STARTING!');
+    logger.info('Timelapse plan staring...');
     startTime = new Date();
     endTime = new Date();
     endTime.setSeconds(endTime.getSeconds() + (movieTime * interval * 25));
@@ -67,10 +68,10 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     abort = false;
     var amountPauses = (movieTime * 25);
     timelapseWaypoints = generateWaypopints(positions, amountPauses);
-    console.log(timelapseWaypoints);
+    logger.info("Timelapse waypoints:%o", timelapseWaypoints);
 
     for (var i = 0; i < timelapseWaypoints.length; i++) {
-        console.log("Drive to " + timelapseWaypoints[i]);
+        logger.info("Drive to " + timelapseWaypoints[i]);
         var timeToMove = sleep(2000);
         var move = motor.driveToPosition(timelapseWaypoints[i]);
 
@@ -78,17 +79,17 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
         await move;
 
         if (cameraControl && ramping && (i % 5 == 0)) {
-            console.log("takePictureWithRamping true");
+            logger.info("Taking picture with ramping and analyzing...");
             var camReturn = camera.takePictureWithRamping(true);
         } else if (cameraControl && ramping) {
-            console.log("takePictureWithRamping false");
+            logger.info("Taking picture without ramping and analyzing...");
             var camReturn = camera.takePictureWithRamping(false);
         } else if (cameraControl) {
             var camReturn = camera.takePictureAndDownload();
         }
 
         if (abort) {
-            console.log("Timelapse aborted!");
+            logger.info("Timelapse aborted!");
             await motor.driveToPosition([0, 0, 0]);
             softReset();
             return;
@@ -104,7 +105,7 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
     }
     await motor.driveToPosition([0, 0, 0]);
     softReset();
-    console.log('Timelapse done!');
+    logger.info('Timelapse done!');
 }
 
 function getDistance(point1, point2) {

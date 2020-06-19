@@ -5,6 +5,7 @@ var fs = require('fs');
 var im = require('imagemagick');
 var camData = require('./camData.json');
 var { getTime, sleep } = require('./helpers');
+const { logger } = require('./logger');
 
 var folder_name = getTime(true);
 var lastImage;
@@ -24,7 +25,7 @@ function initSocket(socket) {
 
     socket.on('requestCamera', function () {
         let has = hasCamera();
-        console.log('Camera connected: ' + has);
+        logger.info('Camera connected: ' + has);
         socket.emit('hasCamera', {
             hasCamera: has
         })
@@ -56,11 +57,11 @@ function initSocket(socket) {
 
     socket.on('changeReference', function (data) {
         reference = Number(reference) + Number(data.value);
-        console.log('Changed reference to: ' + reference);
+        logger.info('Changed brightness reference to: ' + reference);
     })
 
     socket.on('takeReferencePicture', async () => {
-        console.log("Take Reference Picture");
+        logger.info("Take reference picture...");
         try {
             var iso = await getIso();
             var shutterSpeed = await getShutterSpeed();
@@ -71,13 +72,13 @@ function initSocket(socket) {
                     success: true
                 });
             } else {
-                console.log('Taking ref picture failed. Setting do not match ramping config.');
+                logger.error('Taking reference picture failed. Setting do not match ramping config.');
                 socket.emit('takingReferencePictureDone', {
                     success: false
                 });
             }
         } catch (er) {
-            console.log(er);
+            logger.error(er);
             socket.emit('takingReferencePictureDone', {
                 success: false
             })
@@ -90,9 +91,9 @@ function initSocket(socket) {
 killProcess()
     //.then(resetCamera()
     .then(() => {
-        console.log('GPhoto ready');
+        logger.info('GPhoto ready!');
     }).catch(er => {
-        console.log(er.message);
+        logger.error(er);
     })/*)
     .catch(er => {
         console.log(er.message);
@@ -109,7 +110,7 @@ usb.on('attach', async function (device) {
             global.socket.emit('hasCamera', {
                 hasCamera: true
             })
-            console.log('Found camera');
+            logger.info('Found camera!');
         }
     }
 });
@@ -119,7 +120,7 @@ usb.on('detach', function (device) {
         global.socket.emit('hasCamera', {
             hasCamera: false
         })
-        console.log('Camera disconnected');
+        logger.info('Camera disconnected.');
     }
 });
 
@@ -133,7 +134,7 @@ function killProcess() {
             resolve();
         });
         ls.stderr.on('data', (data) => {
-            console.log(data);
+            logger.error(data);
             reject(new Error("Could not terminate GPhoto process."))
         });
 
@@ -182,11 +183,11 @@ function takeReferencePicture() {
             var brightness = await analyseImage(lastImage);
             currentBrightness = brightness;
             reference = brightness;
-            console.log("Reference is: " + reference);
+            logger.info("Reference brightness is: " + reference);
             resolve();
         } catch (er) {
             reject(er);
-            console.log(er);
+            logger.error(er);
         }
     });
 }
@@ -194,12 +195,12 @@ function takeReferencePicture() {
 async function takePictureWithRamping(analyse) {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log("await setshutterspeed");
+            logger.info("Setting shutterSpeed...");
             await setShutterSpeed(CONFIGS[currentStep][0]);
-            console.log("await setiso");
+            logger.info("Setting iso...");
             await setIso(CONFIGS[currentStep][1]);
 
-            console.log("await takepictureanddownload");
+            logger.info("Taking picture and download...");
             lastImage = await takePictureAndDownload();
             resolve();
             if (analyse) {
@@ -207,12 +208,12 @@ async function takePictureWithRamping(analyse) {
                 currentBrightness = brightness;
                 if (currentBrightness - reference > sensibility && currentStep - 1 > 0) {
                     currentStep--;
-                    console.log("Brightness Step got decreased.");
+                    logger.info("Brightness step got decreased.");
                 } else if (currentBrightness - reference < (sensibility * -1) && currentStep + 1 < CONFIGS.length) {
                     currentStep++;
-                    console.log("Brightness Step got increased.");
+                    logger.info("Brightness step got increased.");
                 }
-                console.log('path: ' + lastImage + ' shutterSpeed: ' + CONFIGS[currentStep][0] + ' iso: ' + CONFIGS[currentStep][1] + ' brightness: ' + brightness + ' reference: ' + reference);
+                logger.info('Analyzing done! Path: ' + lastImage + ' shutterSpeed: ' + CONFIGS[currentStep][0] + ' iso: ' + CONFIGS[currentStep][1] + ' brightness: ' + brightness + ' reference: ' + reference);
                 fs.readFile(lastImage, function (err, data) {
                     global.socket.emit('image', {
                         image: true,
@@ -222,11 +223,11 @@ async function takePictureWithRamping(analyse) {
                         brightness: currentBrightness,
                         reference: reference
                     });
-                    if (err) console.log(err);
+                    if (err) logger.error(err);
                 });
             }
         } catch (er) {
-            console.log(er);
+            logger.error(er);
             reject(new Error("Taking picture with ramping failed."));
         }
     });
@@ -254,7 +255,7 @@ async function takePictureWithHdr() {
                 reject(hdrError);
             }
         } catch (er) {
-            console.log(er);
+            logger.error(er);
             reject(new Error('Taking picture with HDR failed'));
         }
     });
@@ -269,7 +270,6 @@ function takePictureAndDownload() {
 
         var captureTime = getTime(false);
         var path = '/home/pi/CamSlider/imagesTaken/' + folder_name + '/' + captureTime;
-        console.log(path);
         const ls = spawn('gphoto2', ['--capture-image-and-download', '--filename=/home/pi/CamSlider/imagesTaken/' + folder_name + '/' + captureTime + '.%C']);
 
         ls.stdout.on('data', (data) => {
@@ -283,7 +283,7 @@ function takePictureAndDownload() {
         })
 
         ls.stderr.on('data', (data) => {
-            console.log(data);
+            logger.error(data);
             reject(new Error("Taking Picture and downloading failed"));
         })
 
@@ -308,7 +308,7 @@ function getShutterSpeed() {
         });
 
         ls.stderr.on('data', (data) => {
-            console.log(data);
+            logger.error(data);
             reject(new Error("Could not get shutterSpeed"))
         });
     });
@@ -328,7 +328,7 @@ function getIso() {
             resolve(parseInt(iso));
         });
         ls.stderr.on('data', (data) => {
-            console.log(data);
+            logger.error(data);
             reject(new Error("Could not get iso"))
         });
     });
@@ -344,11 +344,11 @@ function setIso(iso) {
         const ls = spawn('gphoto2', ['--set-config=iso=' + iso]);
 
         ls.stdout.on('data', (data) => {
-            console.log(data);
+            logger.info(data);
         });
 
         ls.stderr.on('data', (data) => {
-            console.log(data);
+            logger.error(data);
             reject(new Error("Could not set iso"));
 
         });
@@ -369,11 +369,11 @@ function setShutterSpeed(shutterSpeed) {
         const ls = spawn('gphoto2', ['--set-config=shutterspeed=' + shutterSpeed]);
 
         ls.stdout.on('data', (data) => {
-            console.log(data);
+            logger.info(data);
         });
 
         ls.stderr.on('data', (data) => {
-            console.log(data);
+            logger.error(data);
             reject(new Error("Could not set shutterSpeed"));
         });
 
@@ -393,22 +393,22 @@ function analyseImage(path) {
         im.identify(['-format', '%[mean]', path], function (err, output) {
             if (err) {
                 reject(new Error("Could not analyze image"));
-                console.error(err);
+                logger.error(err);
 
             }
-            console.log('Brightness: ' + output);
+            logger.info('Analyzed brightness is: ' + output);
             resolve(Number(output));
         });
     });
 }
 
 function searchConfig(shutterSpeed, iso) {
-    console.log('Searching CONFIG with shutterSpeed: ' + shutterSpeed + 'and iso: ' + iso);
+    logger.info('Searching CONFIG with shutterSpeed: ' + shutterSpeed + 'and iso: ' + iso);
     var step = null;
     for (var i = 0; i < CONFIGS.length; i++) {
         if (CONFIGS[i][0] == shutterSpeed && CONFIGS[i][1] == iso) {
             step = i
-            console.log("Current step in CONFIG is: " + step);
+            logger.info("Current step in CONFIG is: " + step);
             break;
         }
     }
@@ -417,28 +417,19 @@ function searchConfig(shutterSpeed, iso) {
 
 function generateRampingConfig(camera, minIso, maxIso, minShutterSpeed, maxShutterSpeed) {
     if (camera != 'new') {
-        console.log(camera);
-        console.log('cam not new and  it think it is this one for generatin RampingConfig: ' + camData[camera]);
+        logger.info("Generating RampingConfig for " + camera);
+        logger.info('Cam not new and it is this one for generatin RampingConfig:%o ', camData[camera]);
         shutterSpeedOptions = camData[camera].shutterSpeedOptions;
         isoOptions = camData[camera].isoOptions;
     }
-    console.log('index of camera: ' + camera);
-    console.log('camera: ' + camData[camera]);
-    console.log('shutterSpeedOptions: ' + shutterSpeedOptions);
-    console.log('isoOptions: ' + isoOptions);
-    console.log('index of mI: ' + isoOptions.indexOf(parseInt(minIso)));
-    console.log('index of maxI: ' + isoOptions.indexOf(parseInt(maxIso)));
-    console.log('index of mS: ' + shutterSpeedOptions.indexOf(minShutterSpeed));
-    console.log('index of maxS: ' + shutterSpeedOptions.indexOf(maxShutterSpeed));
-    console.log('minshutterSpeed: ' + minShutterSpeed);
-    console.log('minshutterSpeedString: ' + minShutterSpeed.toString());
-    console.log('maxshutterSpeed: ' + maxShutterSpeed);
+    logger.info('index of minISO: ' + isoOptions.indexOf(parseInt(minIso)));
+    logger.info('index of maxISO: ' + isoOptions.indexOf(parseInt(maxIso)));
+    logger.info('index of minShutterSpeed: ' + shutterSpeedOptions.indexOf(minShutterSpeed));
+    logger.info('index of maxShutterSpeed: ' + shutterSpeedOptions.indexOf(maxShutterSpeed));
 
     var options = [];
     var newIsoOptions = isoOptions.slice(isoOptions.indexOf(parseInt(minIso)), isoOptions.indexOf(parseInt(maxIso)) + 1);
     var newShutterSpeedOptions = shutterSpeedOptions.slice(shutterSpeedOptions.indexOf(minShutterSpeed.toString()), shutterSpeedOptions.indexOf(maxShutterSpeed.toString()) + 1);
-    console.log(newIsoOptions);
-    console.log(newShutterSpeedOptions);
 
     for (var i = 0; i < (newShutterSpeedOptions.length + newIsoOptions.length - 1); i++) {
         var option;
@@ -451,7 +442,7 @@ function generateRampingConfig(camera, minIso, maxIso, minShutterSpeed, maxShutt
         options.push(option);
     }
     CONFIGS = options;
-    console.log('Camera Options: ' + CONFIGS);
+    logger.info('Generated RampingConfig:%x', CONFIGS);
 }
 
 function readCameraOptions() {
@@ -459,11 +450,11 @@ function readCameraOptions() {
         try {
             shutterSpeedOptions = await getShutterSpeedOptions();
             isoOptions = await getIsoOptions();
-            console.log(shutterSpeedOptions);
-            console.log(isoOptions);
+            logger.info(shutterSpeedOptions);
+            logger.info(isoOptions);
             resolve([shutterSpeedOptions, isoOptions]);
         } catch (er) {
-            console.log(er);
+            logger.error(er);
             reject(new Error("Could not get Camera Options"));
         }
     });
@@ -496,7 +487,7 @@ function getShutterSpeedOptions() {
         });
 
         ls.stderr.on('data', (data) => {
-            console.error(data);
+            logger.error(data);
             reject(new Error("Could not get shutterSpeedOptions"))
         });
     });
@@ -525,7 +516,7 @@ function getIsoOptions() {
         });
 
         ls.stderr.on('data', (data) => {
-            console.error(data);
+            logger.error(data);
             reject(new Error("Could not get isoOptions"))
         });
     });
