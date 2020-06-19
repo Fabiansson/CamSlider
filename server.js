@@ -81,14 +81,18 @@ io.on('connection', function (socket) {
         logger.info('Downloading new Software.');
         exec(commands.gitPull, function (error, stdout, stderr) {
             logger.info('Installing Server Files.');
+            if (stdout) logger.info(stdout);
             exec(commands.serverInstall, function (error, stdout, stderr) {
                 logger.info('Installing Client Files.');
+                if (stdout) logger.info(stdout);
                 exec(commands.clientInstall, function (error, stdout, stderr) {
                     logger.info('Building Client.');
+                    if (stdout) logger.info(stdout);
                     exec(commands.clientBuild, function (error, stdout, stderr) {
                         logger.info('Updating done... restarting now...');
+                        if (stdout) logger.info(stdout);
                         socket.emit('updateDone');
-                        exec('reboot', function (error, stdout, stderr) { logger.info(stdout); });
+                        exec('reboot', function (error, stdout, stderr) { if (stdout) logger.info(stdout); });
                     })
                 })
             })
