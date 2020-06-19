@@ -80,6 +80,9 @@ class Menu extends React.Component {
             <Button variant="outlined" onClick={() => this.openDialog('reboot')} >
                 Reboot
             </Button>
+            <Button variant="outlined" onClick={() => this.openDialog('restartServices')} >
+                Reset
+            </Button>
             <Button variant="outlined" onClick={() => this.openDialog('update')} >
                 Update
             </Button>

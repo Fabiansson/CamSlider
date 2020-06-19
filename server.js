@@ -106,4 +106,8 @@ io.on('connection', function (socket) {
     socket.on('reboot', function () {
         exec('reboot', function (error, stdout, stderr) { logger.info(stdout); });
     })
+
+    socket.on('restartServices', function() {
+        exec('sudo systemctl restart slider.service', function (error, stdout, stderr) { logger.info(stdout); });
+    })
 });
