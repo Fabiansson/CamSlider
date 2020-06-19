@@ -68,8 +68,8 @@ function initSocket(socket) {
     })
 
     socket.on('init', async function () {
+        global.mode = 'timelapse';
         if (!initialized) {
-            global.mode = 'timelapse';
             await initTimelapse();
         }
         socket.emit('initDone');
