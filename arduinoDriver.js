@@ -1,5 +1,5 @@
 var devMode = false;
-if(process.env.NODE_ENV == 'development') var devMode = true;
+if (process.env.NODE_ENV == 'development') var devMode = true;
 let { logger } = require('./logger');
 const Firmata = require("firmata");
 var board;
@@ -68,7 +68,10 @@ function initSocket(socket) {
     })
 
     socket.on('init', async function () {
-        if (!initialized) await initTimelapse();
+        if (!initialized) {
+            global.mode = 'timelapse';
+            await initTimelapse();
+        }
         socket.emit('initDone');
     })
 
@@ -101,8 +104,9 @@ if (!devMode) board.on("ready", () => {
     board.digitalWrite(7, board.LOW);
     board.digitalWrite(10, board.LOW);
 
+
     board.digitalRead(13, async function (value) {
-        if (value == board.LOW) {
+        if (global.mode == 'timelapse' && value == board.LOW) {
             board.reportDigitalPin(13, 0)
             board.accelStepperAcceleration(0, 0);
             board.accelStepperSpeed(0, 2000);
@@ -217,7 +221,7 @@ async function driveToPosition(position) {
             var z_position = position[1];
         }
 
-        if(!devMode) {
+        if (!devMode) {
             board.accelStepperAcceleration(0, 1000);
             board.accelStepperAcceleration(1, 1000);
             board.accelStepperAcceleration(2, 1000);

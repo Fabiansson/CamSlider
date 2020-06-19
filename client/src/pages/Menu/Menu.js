@@ -23,6 +23,10 @@ class Menu extends React.Component {
         };
     }
 
+    componentDidMount() {
+        console.log('hey im in the menue');
+    }
+
     openDialog(task) {
         this.setState({
             open: true,
