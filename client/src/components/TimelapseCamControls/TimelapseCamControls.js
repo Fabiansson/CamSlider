@@ -55,7 +55,7 @@ class TimelapseCamControls extends React.Component {
                 maxShutterSpeed: data.cameraCollection[0].shutterSpeedOptions[data.cameraCollection[0].shutterSpeedOptions.length - 1],
                 isoOptions: data.cameraCollection[0].isoOptions,
                 minIso: data.cameraCollection[0].isoOptions[0],
-                maxIso: data.cameraCollection[0].isoOptions[data.cameraCollection[0].isoOptions.length - 1]
+                maxIso: data.cameraCollection[0].isoOptions[data.cameraCollection[0].isoOptions.length / 2]
             });
         });
 
@@ -67,7 +67,7 @@ class TimelapseCamControls extends React.Component {
                 minShutterSpeed: data.shutterSpeedOptions[0],
                 maxShutterSpeed: data.shutterSpeedOptions[data.shutterSpeedOptions.length - 1],
                 minIso: data.isoOptions[0],
-                maxIso: data.isoOptions[data.isoOptions.length - 1]
+                maxIso: data.isoOptions[data.isoOptions.length / 2]
             })
         })
 

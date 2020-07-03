@@ -46,7 +46,22 @@ server.listen(port, host, function () {
 //Serving directory
 app.use(express.static(path.join(__dirname, 'client', 'build')));
 
-app.get('/*', function (req, res) {
+app.get('/timelapse', function (req, res) {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+app.get('/panorama', function (req, res) {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+app.get('/movie', function (req, res) {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+app.get('/runningTimelapse', function (req, res) {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+app.get('/runningPanorama', function (req, res) {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+app.get('/runningMovie', function (req, res) {
     res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
 });
 
