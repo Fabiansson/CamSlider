@@ -156,7 +156,7 @@ class TimelapseCamControls extends React.Component {
                 minShutterSpeed: shutterSpeedOptions[0],
                 maxShutterSpeed: shutterSpeedOptions[shutterSpeedOptions.length - 1],
                 minIso: isoOptions[0],
-                maxIso: isoOptions[isoOptions.length - 1]
+                maxIso: isoOptions[isoOptions.length / 2]
              })
         }
     }

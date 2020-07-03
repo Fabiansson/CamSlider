@@ -68,7 +68,9 @@ async function timelapse(interval, movieTime, cameraControl, ramping) {
         await timeToMove;
         await move;
 
-        if (cameraControl && ramping && (i % 5 == 0)) {
+        let nthAnalyze = Math.floor(60 / interval);
+
+        if (cameraControl && ramping && (i % nthAnalyze == 0)) {
             logger.info("Taking picture with ramping and analyzing...");
             var camReturn = camera.takePictureWithRamping(true);
         } else if (cameraControl && ramping) {
