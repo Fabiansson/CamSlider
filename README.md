@@ -27,10 +27,10 @@ All functionalities are controlled via a served React Web Interface via Web Sock
 ![alt text](https://i.postimg.cc/0y3J6hYB/outdoor-1.jpg)
 
 <p float="left">
-  <img src="https://i.postimg.cc/15rBb0xz/pixel2-menu-pixel-quite-black-portrait-Kopie.png" width="500" />
-  <img src="https://i.postimg.cc/d0L97zh7/pixel2-timelapse-pixel-quite-black-portrait-Kopie.png" width="500" /> 
-  <img src="https://i.postimg.cc/Pq9Q12DS/pixel2-panorama-pixel-quite-black-portrait-Kopie.png" width="500" />
-  <img src="https://i.postimg.cc/bJnHgkHp/pixel2-panorama-progress-pixel-quite-black-portrait-Kopie.png" width="500" />
+  <img src="https://i.postimg.cc/15rBb0xz/pixel2-menu-pixel-quite-black-portrait-Kopie.png" width="400" />
+  <img src="https://i.postimg.cc/d0L97zh7/pixel2-timelapse-pixel-quite-black-portrait-Kopie.png" width="400" /> 
+  <img src="https://i.postimg.cc/Pq9Q12DS/pixel2-panorama-pixel-quite-black-portrait-Kopie.png" width=400" />
+  <img src="https://i.postimg.cc/bJnHgkHp/pixel2-panorama-progress-pixel-quite-black-portrait-Kopie.png" width="400" />
 </p>
 
 
